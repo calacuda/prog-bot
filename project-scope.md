@@ -61,6 +61,7 @@ List of Nodes:
 5. GitHub/GitLab web-hook intake server
 6. TTS node (should probably run on the streaming machine. or setup [Mimic3](https://mycroft-ai.gitbook.io/docs/mycroft-technologies/mimic-tts/mimic-3) as a server and connect to it from a client running on the streaming machine)
 7. [rust-analyzer](https://rust-analyzer.github.io/) node
+8. stenographer to keep a log of all things the user says to the chat-bot and every thing prog-bot says (regardless of the node that generates it)
 
 ## Node Trigger Events
 
@@ -73,4 +74,5 @@ List of Nodes:
 | `web-hook intake` | a web hook from GitHub/GitLab/whatever else |
 | `TTS` | a message of type speak on the message bus |
 | `rust-analyzer` | every file save |
+| `stenographer` | every Spoken & UserUtterance messages on the message bus |
 
