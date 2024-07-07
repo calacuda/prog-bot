@@ -3,9 +3,9 @@
 This document describes the overall design and goals of the Prog-Bot project.
 
 - for an outline of project goals see: [What should it do?](#What-should-it-do).
-- for an overview of how to go about achieving these goals see: [How should it do this?](#How%20should%20it%20do%20this).
-- for an understanding of the message-bus and node architecture, see: [Nodes and IPC](#Nodes%20and%20IPC).
-- for what event triggers what node/action, see: [Node Trigger Events](#Node_Trigger_Events)
+- for an overview of how to go about achieving these goals see: [How should it do this?](#How-should-it-do-this).
+- for an understanding of the message-bus and node architecture, see: [Nodes and IPC](#Nodes-and-IPC).
+- for what event triggers what node/action, see: [Node Trigger Events](#Node-Trigger-Events)
 
 ## What should it do
 
@@ -73,6 +73,4 @@ List of Nodes:
 | `web-hook intake` | a web hook from GitHub/GitLab/whatever else |
 | `TTS` | a message of type speak on the message bus |
 | `rust-analyzer` | every file save |
-<!-- | `` | | -->
-
 
