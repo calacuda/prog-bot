@@ -1,0 +1,2 @@
+bulk-rename:
+  for dir in $(ls --color=never | rg -or '$1' "prog-bot-(.+)" --color=never); do mv prog-bot-$dir $dir; done
