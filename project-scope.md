@@ -2,11 +2,12 @@
 
 This document describes the overall design and goals of the Prog-Bot project.
 
-for an outline of project goals see: [What should it do?](#What%20should%20it%20do?).
-for an overview of how to go about achieving these goals see: [How should it do this?](#How%20should%20it%20do%20this?).
-for an understanding of the message-bus and node architecture, see: [Nodes and IPC](#Nodes%20and%20IPC).
+- for an outline of project goals see: [What should it do?](#What-should-it-do).
+- for an overview of how to go about achieving these goals see: [How should it do this?](#How%20should%20it%20do%20this).
+- for an understanding of the message-bus and node architecture, see: [Nodes and IPC](#Nodes%20and%20IPC).
+- for what event triggers what node/action, see: [Node Trigger Events](#Node_Trigger_Events)
 
-## What should it do?
+## What should it do
 
 - collect TODOs from comments in the code and put them in a file
 	- notify me of TODOs not completed from last save
@@ -15,11 +16,12 @@ for an understanding of the message-bus and node architecture, see: [Nodes and I
 	- have a UUID generator to easily tag TODOs
 - ask questions about the code if I'm quiet for too long (this question asker should be contextually aware of the TODOs and of current errors)
 - alert on [rust-analyzer](https://rust-analyzer.github.io/) errors when saving the file
-- alert on GitHub/GitLab CI/CD fails/successes 
+- alert on GitHub/GitLab CI/CD fails/successes
+- alert when rust-analyzer is ready to analyze a newly oppened project
 
 each "skill" can be its own process communicating using a message-bus
 
-## How should it do this?
+## How should it do this
 
 - TODOs comments will be structured like this: ```// TODO: <UUID> thing to do``` this can then be parsed using [Pest](https://docs.rs/pest/latest/pest/) and/or [serde](https://docs.rs/serde/latest/serde/index.html), and will be used to construct a struct with the fallowing fields:
 	- file: a file path (relative to `Cargo.toml`) where the TODO was found.
@@ -59,3 +61,18 @@ List of Nodes:
 5. GitHub/GitLab web-hook intake server
 6. TTS node (should probably run on the streaming machine. or setup [Mimic3](https://mycroft-ai.gitbook.io/docs/mycroft-technologies/mimic-tts/mimic-3) as a server and connect to it from a client running on the streaming machine)
 7. [rust-analyzer](https://rust-analyzer.github.io/) node
+
+## Node Trigger Events
+
+| **Node** | **Trigger** |
+|----------|-------------|
+| `TODO Collector` | runs on each individual file, on file saves |
+| `GUI` | only receives information from the message-bus. can also alter settings/parameters (or outright trigger) other nodes |
+| `utterance detector` | every time the mic volume rises above THEN falls bellow a threshold (controlled by the settings file) |
+| `chat-bot` | a message on the message bus (said message can be triggered by either a wake word, or keyboard shortcut) |
+| `web-hook intake` | a web hook from GitHub/GitLab/whatever else |
+| `TTS` | a message of type speak on the message bus |
+| `rust-analyzer` | every file save |
+<!-- | `` | | -->
+
+
