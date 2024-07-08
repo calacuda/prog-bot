@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+actix = "0.13.5"
+actix-broker = "0.4.3"
+actix-rt = "2.10.0"
+actix-web = { version = "4.8.0", default-features = false, features = ["macros"] }
+actix-web-actors = "4.3.0"
+event-emitter-rs = "0.1.4"
+prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
+prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
+tokio = { version = "1.38.0", features = ["full"] }

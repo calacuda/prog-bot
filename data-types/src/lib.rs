@@ -17,7 +17,7 @@ pub struct ProgBotMessage {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ProgBotMessageContext {
     /// uuid of sender
-    pub sender: Uuid,
+    pub sender: Option<Uuid>,
     // /// node type of sender
     // pub node_type: NodeType,
     pub response_to: Option<Uuid>,

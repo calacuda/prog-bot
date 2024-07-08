@@ -4,7 +4,7 @@ use futures_util::{
     SinkExt, StreamExt,
 };
 use prog_bot_data_types::{
-    get_new_uuid, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, SubscribeTo, Uuid,
+    ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, SubscribeTo, Uuid,
 };
 pub use tokio;
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -49,7 +49,7 @@ pub async fn connect_to_messagebus(
             msg_type: ProgBotMessageType::Syn,
             data: serde_json::to_value(&sub_to)?,
             context: ProgBotMessageContext {
-                sender: get_new_uuid(),
+                sender: None,
                 response_to: None,
             },
         })?))
@@ -68,8 +68,9 @@ pub async fn connect_to_messagebus(
                         Ok(uuid)
                     } else {
                         bail!(
-                            "got wrogn response type from server. get {:?}",
-                            msg.msg_type
+                            "got wrong response type from server. got {:?}, expected {:?}",
+                            msg.msg_type,
+                            ProgBotMessageType::Ack,
                         )
                     }
                 }
