@@ -66,6 +66,10 @@ pub enum ProgBotMessageType {
     GetNewTodoUuid,
     /// the new uuid for TODOs
     NewTodoUuid,
+    /// subscribe to a new message type
+    Subscribe,
+    /// unsubcribe from a subscribed message type
+    Unsubscribe,
     /// sent to the message bus when a node first connects. it describes what messages it wishes to
     /// subscribe to.
     Syn,
