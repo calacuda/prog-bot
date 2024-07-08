@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::collections::HashSet;
 
-pub type SubscribeTo = Vec<ProgBotMessageType>;
+pub type SubscribeTo = HashSet<ProgBotMessageType>;
 pub type Uuid = uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -14,7 +15,7 @@ pub struct ProgBotMessage {
     pub context: ProgBotMessageContext,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Default)]
 pub struct ProgBotMessageContext {
     /// uuid of sender
     pub sender: Option<Uuid>,
@@ -26,6 +27,30 @@ pub struct ProgBotMessageContext {
 pub fn empty_map() -> Value {
     // HashMap::new()
     json!({})
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct Configuration {
+    pub websocket: WebsocketConf,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct WebsocketConf {
+    pub host: String,
+    pub port: u16,
+    pub route: String,
+}
+
+impl Configuration {
+    pub fn get() -> Self {
+        Self {
+            websocket: WebsocketConf {
+                host: "127.0.0.1".into(),
+                port: 8080,
+                route: "message-bus".into(),
+            },
+        }
+    }
 }
 
 // #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]

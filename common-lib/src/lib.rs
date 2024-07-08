@@ -4,7 +4,7 @@ use futures_util::{
     SinkExt, StreamExt,
 };
 use prog_bot_data_types::{
-    ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, SubscribeTo, Uuid,
+    Configuration, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, SubscribeTo, Uuid,
 };
 pub use tokio;
 use tokio::io::{AsyncRead, AsyncWrite};
@@ -14,15 +14,16 @@ use tracing::*;
 // TODO: make logging macros that take a write connections to the message bus and a message to be
 // logged.
 
-/// returns user configs from config file
-pub fn get_config_file() {}
-
 /// returns the url for the message bus
 fn get_message_bus_url() -> String {
-    // TODO: call get_config_file
-    // TODO: build url from that
+    // call get_config_file
+    let conf = Configuration::get();
 
-    "ws://127.0.0.1:8080".into()
+    // build url from that
+    format!(
+        "ws://{}:{}/{}",
+        conf.websocket.host, conf.websocket.port, conf.websocket.route
+    )
 }
 
 /// connects to the message bus and returns the Uuid returned from the message_bus server
@@ -87,4 +88,20 @@ pub async fn connect_to_messagebus(
     info!("got reqestration response");
 
     Ok((uuid?, (write, read)))
+}
+
+pub fn start_logging() -> Result<()> {
+    // construct a subscriber that prints formatted traces to stdout
+    let subscriber = tracing_subscriber::fmt()
+        .compact()
+        .with_thread_ids(true)
+        .with_target(true)
+        .with_level(true)
+        .with_max_level(Level::TRACE)
+        .without_time()
+        .finish();
+    // use that subscriber to process traces emitted after this point
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    Ok(())
 }

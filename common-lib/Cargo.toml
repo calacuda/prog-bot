@@ -12,3 +12,4 @@ serde_json = "1.0.120"
 tokio = { version = "1.38.0", default-features = false, features = ["full", "tracing"] }
 tokio-tungstenite = { version = "0.23.1", features = ["native-tls"] }
 tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }
+tracing-subscriber = "0.3.18"
