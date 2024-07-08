@@ -11,6 +11,9 @@ use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream};
 use tracing::*;
 
+// TODO: make logging macros that take a write connections to the message bus and a message to be
+// logged.
+
 /// returns user configs from config file
 pub fn get_config_file() {}
 
