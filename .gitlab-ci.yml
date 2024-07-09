@@ -24,16 +24,6 @@ build-message-bus:
 message-bus-test:
   stage: test
   image: rust:1.79-bookworm
-  cache:
-    - key:
-        files:
-          - ./core/message-bus/Cargo.lock
-          - ./core/message-bus/target/CACHEDIR.TAG
-      paths:
-        - core/message-bus/target/debug/build
-        - core/message-bus/target/debug/deps
-        - core/message-bus/target/debug/prog-bot-message-bus
-        - core/message-bus/target/debug/prog-bot-message-bus.d
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
@@ -49,13 +39,11 @@ lsp-test:
   cache:
     - key:
         files:
-          - ./core/message-bus/Cargo.lock
-          - ./core/message-bus/target/CACHEDIR.TAG
+          - ./core/lsp/Cargo.lock
+          - ./core/lsp/target/CACHEDIR.TAG
       paths:
-        - core/message-bus/target/debug/build
-        - core/message-bus/target/debug/deps
-        - core/message-bus/target/debug/prog-bot-message-bus
-        - core/message-bus/target/debug/prog-bot-message-bus.d
+        - core/lsp/target/debug/build
+        - core/lsp/target/debug/deps
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
@@ -72,13 +60,11 @@ todo-test:
   cache:
     - key:
         files:
-          - ./core/message-bus/Cargo.lock
-          - ./core/message-bus/target/CACHEDIR.TAG
+          - ./core/todo-collector/Cargo.lock
+          - ./core/todo-collector/target/CACHEDIR.TAG
       paths:
-        - core/message-bus/target/debug/build
-        - core/message-bus/target/debug/deps
-        - core/message-bus/target/debug/prog-bot-message-bus
-        - core/message-bus/target/debug/prog-bot-message-bus.d
+        - core/todo-collector/target/debug/build
+        - core/todo-collector/target/debug/deps
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
