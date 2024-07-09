@@ -20,9 +20,9 @@ message-bus-test:
     - pwd
     - tmux new -ds "messagebus-test"
     - cargo build
-    - cargo run
+    # - cargo run
     - tmux send-keys -t messagebus-test "cargo run" Enter
-    - sleep 5
+    - sleep 60
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
