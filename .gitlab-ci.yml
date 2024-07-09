@@ -1,0 +1,25 @@
+stages: 
+  - test
+
+message-bus-test:
+  stage: test
+  image: rust:1.79-bookworm
+  cache:
+    - key:
+        files:
+          - ./core/message-bus/Cargo.lock
+          - ./core/message-bus/target/CACHEDIR.TAG
+      paths:
+        - core/message-bus/target/debug/build
+        - core/message-bus/target/debug/deps
+  before_script:
+    # - export CARGO_UNSTABLE_SPARSE_REGISTRY=true
+    - apt-get update -y && apt-get install -y cmake just openssl-dev
+  script:
+    - cd ./core/message-bus/
+    - pwd
+    - just test
+  only:
+    - main
+  environment:
+    name: production
