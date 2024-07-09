@@ -21,5 +21,5 @@ message-bus-test:
     - just test
   only:
     - main
-  environment:
-    name: production
+  # environment:
+  #   name: production
