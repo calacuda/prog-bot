@@ -1,5 +1,25 @@
-stages: 
+stages:
+  - prebuild
   - test
+
+build-message-bus:
+  stage: prebuild
+  image: rust:1.79-bookworm
+  cache:
+    - key:
+        files:
+          - ./core/message-bus/Cargo.lock
+          - ./core/message-bus/target/CACHEDIR.TAG
+      paths:
+        - core/message-bus/target/debug/build
+        - core/message-bus/target/debug/deps
+  before_script:
+    # - apt-get update -y && apt-get install -y cmake tmux
+  script:
+    - cd ./core/message-bus/
+    - cargo build
+  only:
+    - main
 
 message-bus-test:
   stage: test
@@ -13,15 +33,10 @@ message-bus-test:
         - core/message-bus/target/debug/build
         - core/message-bus/target/debug/deps
   before_script:
-    # - export CARGO_UNSTABLE_SPARSE_REGISTRY=true
     - apt-get update -y && apt-get install -y cmake tmux
   script:
     - cd ./core/message-bus/
-    # - pwd
-    # - tmux new -ds "messagebus-test"
-    - cargo build
-    # - cargo run
-    # - tmux send-keys -t messagebus-test "cargo run" Enter
+    # - cargo build
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 2
     - cargo test
