@@ -24,6 +24,8 @@ build-message-bus:
 message-bus-test:
   stage: test
   image: rust:1.79-bookworm
+  before_script:
+    - apt-get update -y && apt-get install -y tmux
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
@@ -36,6 +38,8 @@ message-bus-test:
 lsp-test:
   stage: test
   image: rust:1.79-bookworm
+  before_script:
+    - apt-get update -y && apt-get install -y tmux
   cache:
     - key:
         files:
@@ -57,6 +61,8 @@ lsp-test:
 todo-test:
   stage: test
   image: rust:1.79-bookworm
+  before_script:
+    - apt-get update -y && apt-get install -y tmux
   cache:
     - key:
         files:

@@ -78,6 +78,8 @@ pub enum ProgBotMessageType {
     FileSaved,
     /// a file was opened and should be processed by the lsp and and the TODO collector
     FileOpened,
+    /// see: description for FileOpened.
+    FileClosed,
     /// instructs the chat-bot to listen
     ChatBotListen,
     /// the chat-bot started listening
