@@ -16,6 +16,9 @@ use std::sync::{
 use tokio::time::{sleep, Duration};
 use tracing::*;
 
+#[cfg(test)]
+mod test;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MessageEvent;
 
@@ -68,7 +71,10 @@ impl Handler<MessageInternalWrapper> for MessageBus {
 
     fn handle(&mut self, item: MessageInternalWrapper, ctx: &mut Self::Context) {
         if item.id != self.id && self.subscribed_to.contains(&item.message.msg_type) {
-            // debug!("connection {} recv'ed a message", self.id);
+            debug!(
+                "connection {} recv'ed a message {:?}",
+                self.id, item.message
+            );
             let mut mesg = item.message;
 
             mesg.context.sender = Some(item.id);
@@ -94,6 +100,11 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
 
                     match message.msg_type {
                         ProgBotMessageType::Syn => {
+                            if let Ok(sub_to) = serde_json::from_value::<SubscribeTo>(message.data)
+                            {
+                                self.subscribed_to.extend(sub_to);
+                            }
+
                             let res_mesg = ProgBotMessage {
                                 msg_type: ProgBotMessageType::Ack,
                                 data: serde_json::to_value(self.id).unwrap(),
@@ -159,12 +170,12 @@ async fn index(
         stream,
     );
     // info!("{:?}", resp);
-    info!("ID => {id}");
+    // info!("ID => {id}");
 
     resp
 }
 
-async fn start(configs: Configuration) -> Result<()> {
+pub async fn start(configs: Configuration) -> Result<()> {
     let msg_event_addr = web::Data::new(MessageEvent.start());
 
     HttpServer::new(move || {
