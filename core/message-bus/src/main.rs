@@ -169,14 +169,14 @@ async fn index(
         &req,
         stream,
     );
-    // info!("{:?}", resp);
-    // info!("ID => {id}");
 
     resp
 }
 
 pub async fn start(configs: Configuration) -> Result<()> {
     let msg_event_addr = web::Data::new(MessageEvent.start());
+
+    // TODO: add end points for file save and load
 
     HttpServer::new(move || {
         App::new()

@@ -76,6 +76,8 @@ pub enum ProgBotMessageType {
     RecvWebHook,
     /// a file was saved. which file is defined in the data section of the message
     FileSaved,
+    /// a file was opened and should be processed by the lsp and and the TODO collector
+    FileOpened,
     /// instructs the chat-bot to listen
     ChatBotListen,
     /// the chat-bot started listening

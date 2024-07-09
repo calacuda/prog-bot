@@ -13,8 +13,8 @@ build-message-bus:
       paths:
         - core/message-bus/target/debug/build
         - core/message-bus/target/debug/deps
-  before_script:
-    # - apt-get update -y && apt-get install -y cmake tmux
+        - core/message-bus/target/debug/prog-bot-message-bus
+        - core/message-bus/target/debug/prog-bot-message-bus.d
   script:
     - cd ./core/message-bus/
     - cargo build
@@ -32,16 +32,59 @@ message-bus-test:
       paths:
         - core/message-bus/target/debug/build
         - core/message-bus/target/debug/deps
-  before_script:
-    - apt-get update -y && apt-get install -y cmake tmux
+        - core/message-bus/target/debug/prog-bot-message-bus
+        - core/message-bus/target/debug/prog-bot-message-bus.d
   script:
     - cd ./core/message-bus/
-    # - cargo build
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 2
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
     - main
-  # environment:
-  #   name: production
+
+lsp-test:
+  stage: test
+  image: rust:1.79-bookworm
+  cache:
+    - key:
+        files:
+          - ./core/message-bus/Cargo.lock
+          - ./core/message-bus/target/CACHEDIR.TAG
+      paths:
+        - core/message-bus/target/debug/build
+        - core/message-bus/target/debug/deps
+        - core/message-bus/target/debug/prog-bot-message-bus
+        - core/message-bus/target/debug/prog-bot-message-bus.d
+  script:
+    - cd ./core/message-bus/
+    - tmux new -ds "messagebus-test" "cargo run"
+    - sleep 2
+    - cd ../lsp
+    # - cargo test
+    - tmux kill-session -t "messagebus-test"
+  only:
+    - main
+
+todo-test:
+  stage: test
+  image: rust:1.79-bookworm
+  cache:
+    - key:
+        files:
+          - ./core/message-bus/Cargo.lock
+          - ./core/message-bus/target/CACHEDIR.TAG
+      paths:
+        - core/message-bus/target/debug/build
+        - core/message-bus/target/debug/deps
+        - core/message-bus/target/debug/prog-bot-message-bus
+        - core/message-bus/target/debug/prog-bot-message-bus.d
+  script:
+    - cd ./core/message-bus/
+    - tmux new -ds "messagebus-test" "cargo run"
+    - sleep 2
+    - cd ../todo-collector/
+    # - cargo test
+    - tmux kill-session -t "messagebus-test"
+  only:
+    - main
