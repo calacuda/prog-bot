@@ -14,15 +14,15 @@ message-bus-test:
         - core/message-bus/target/debug/deps
   before_script:
     # - export CARGO_UNSTABLE_SPARSE_REGISTRY=true
-    - apt-get update -y && apt-get install -y cmake
-    - bash -c "$(wget -qO - 'https://shlink.makedeb.org/install')"
-    - git clone https://mpr.makedeb.org/just
-    - cd just
-    - makedeb -si
+    - apt-get update -y && apt-get install -y cmake tmux
   script:
     - cd ./core/message-bus/
     - pwd
-    - just test
+    - tmux new -ds "messagebus-test"
+    - tmux send-keys -t messagebus-test "cargo run" Enter
+    - sleep 2
+    - cargo test
+    - tmux kill-session -t "messagebus-test"
   only:
     - main
   # environment:
