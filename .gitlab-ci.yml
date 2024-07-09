@@ -14,7 +14,7 @@ message-bus-test:
         - core/message-bus/target/debug/deps
   before_script:
     # - export CARGO_UNSTABLE_SPARSE_REGISTRY=true
-    - apt-get update -y && apt-get install -y cmake just openssl-dev
+    - bash -c 'apt-get update -y && apt-get install -y cmake just openssl-dev'
   script:
     - cd ./core/message-bus/
     - pwd
