@@ -3,7 +3,7 @@ stages:
 
 message-bus-test:
   stage: test
-  image: rust:1.79-bookworm
+  image: rust:1.71-bookworm
   cache:
     - key:
         files:
@@ -14,7 +14,7 @@ message-bus-test:
         - core/message-bus/target/debug/deps
   before_script:
     # - export CARGO_UNSTABLE_SPARSE_REGISTRY=true
-    - bash -c 'apt-get update -y && apt-get install -y cmake just openssl-dev'
+    - apt-get update -y && apt-get install -y cmake just openssl-dev
   script:
     - cd ./core/message-bus/
     - pwd
