@@ -1,0 +1,6 @@
+test:
+  tmux new -ds "messagebus-test"
+  tmux send-keys -t messagebus-test "cargo run" Enter
+  sleep 2
+  cargo test
+  tmux kill-session -t "messagebus-test"
