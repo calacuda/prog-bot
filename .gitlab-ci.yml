@@ -17,12 +17,13 @@ message-bus-test:
     - apt-get update -y && apt-get install -y cmake tmux
   script:
     - cd ./core/message-bus/
-    - pwd
-    - tmux new -ds "messagebus-test"
+    # - pwd
+    # - tmux new -ds "messagebus-test"
     - cargo build
     # - cargo run
-    - tmux send-keys -t messagebus-test "cargo run" Enter
-    - sleep 60
+    # - tmux send-keys -t messagebus-test "cargo run" Enter
+    - tmux new -ds "messagebus-test" "cargo run"
+    - sleep 30
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
