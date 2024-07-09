@@ -53,7 +53,7 @@ linter-test:
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 2
     - cd ../lsp
-    # - cargo test
+    - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
     - main
