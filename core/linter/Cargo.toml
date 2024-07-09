@@ -1,12 +1,7 @@
 [package]
-name = "prog-bot-lsp"
+name = "prog-bot-linter"
 version = "0.1.0"
 edition = "2021"
-
-# A noop dependency that changes in the Rust repository, it's a bit of a hack.
-# See the `src/tools/rustc-workspace-hack/README.md` file in `rust-lang/rust`
-# for more information.
-rustc-workspace-hack = "1.0.0"
 
 [dependencies]
 anyhow = { version = "1.0.86", features = ["backtrace"] }
@@ -15,9 +10,9 @@ ctrlc = "3.4.4"
 futures-util = "0.3.30"
 prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
 prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
-rustc-tools = "0.78.1"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
+strip-ansi-escapes = "0.2.0"
 tokio = { version = "1.38.0", features = ["full"] }
 tokio-tungstenite = { version = "0.23.1", features = ["native-tls"] }
 tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }

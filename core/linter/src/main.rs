@@ -1,12 +1,10 @@
-#![feature(rustc_private)]
-
 use anyhow::Result;
 use futures_util::{
     stream::{SplitSink, SplitStream},
-    StreamExt,
+    SinkExt, StreamExt,
 };
 use prog_bot_common::{connect_to_messagebus, start_logging};
-use prog_bot_data_types::{ProgBotMessage, ProgBotMessageType, Uuid};
+use prog_bot_data_types::{ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, Uuid};
 use std::{
     collections::HashSet,
     path::PathBuf,
@@ -17,12 +15,16 @@ use std::{
 };
 use tokio::{
     io::{AsyncRead, AsyncWrite},
+    process::Command,
     spawn,
     sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
     time::{sleep, Duration},
 };
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 use tracing::*;
+
+#[cfg(test)]
+mod test;
 
 async fn talk_with_message_bus(
     tx: UnboundedSender<PathBuf>,
@@ -59,7 +61,49 @@ async fn process_messages(
     uuid: Uuid,
 ) -> Result<()> {
     while let Some(file_path) = rx.recv().await {
-        // TODO: refresh cargo clippy as extract errors.
+        // run cargo check / clippy & record output
+        if let Ok(res) = Command::new("cargo")
+            .arg("check")
+            .current_dir(file_path.parent().unwrap())
+            .output()
+            .await
+        {
+            // strip ansi sequences
+            let output = strip_ansi_escapes::strip(res.stderr);
+            let output = String::from_utf8_lossy(&output).to_string();
+
+            // parse errors
+            debug!("{output}");
+            // for (line_1, line_2) in output.lines().zip(output.lines().skip(1)) {
+            for lines in (&output
+                .lines()
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>())
+                .windows(3)
+            {
+                if lines[0].is_empty() && lines[1].starts_with("error") {
+                    // Speak
+                    let file_line_num = lines[2]
+                        .replace("  --> ", "")
+                        .replace(".rs:", " dot R S on line ");
+
+                    let message = format!("{} in file: {file_line_num}", lines[1]);
+
+                    let message = ProgBotMessage {
+                        msg_type: ProgBotMessageType::Speak,
+                        context: ProgBotMessageContext {
+                            sender: Some(uuid),
+                            response_to: None,
+                        },
+                        data: serde_json::to_value(&message)?,
+                    };
+
+                    writer
+                        .send(Message::Text(serde_json::to_string(&message)?))
+                        .await?;
+                }
+            }
+        }
     }
 
     Ok(())
