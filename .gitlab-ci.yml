@@ -21,7 +21,7 @@ message-bus-test:
     - tmux new -ds "messagebus-test"
     - cargo build
     - tmux send-keys -t messagebus-test "cargo run" Enter
-    - sleep 2
+    - sleep 5
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
