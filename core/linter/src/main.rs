@@ -1,3 +1,5 @@
+#![feature(rustc_private)]
+
 use anyhow::Result;
 use futures_util::{
     stream::{SplitSink, SplitStream},
@@ -56,8 +58,8 @@ async fn process_messages(
     mut writer: SplitSink<WebSocketStream<impl AsyncRead + AsyncWrite + Unpin>, Message>,
     uuid: Uuid,
 ) -> Result<()> {
-    while let Some(message) = rx.recv().await {
-        // TODO: refresh rust-analyzer as extract errors.
+    while let Some(file_path) = rx.recv().await {
+        // TODO: refresh cargo clippy as extract errors.
     }
 
     Ok(())
@@ -73,7 +75,7 @@ async fn main() -> Result<()> {
 
     let (uuid, (write, read)) = connect_to_messagebus(sub_to).await?;
 
-    info!("rust-analyzer connected to message-bus. assigned uuid: {uuid}");
+    info!("clippy connected to message-bus. assigned uuid: {uuid}");
 
     let (from_mb_tx, from_mb_rx) = unbounded_channel();
     // let (to_mb_tx, to_mb_rx) = unbounded_channel::<ProgBotMessage>();
@@ -82,7 +84,7 @@ async fn main() -> Result<()> {
     let r = running.clone();
 
     ctrlc::set_handler(move || {
-        info!("terminating rust-analyzer node");
+        info!("terminating clippy node");
         r.store(false, Ordering::SeqCst);
     })
     .expect("Error setting Ctrl-C handler");
@@ -107,7 +109,7 @@ async fn main() -> Result<()> {
         }
     });
 
-    info!("rust-analyzer node started");
+    info!("clippy node started");
 
     while running.load(Ordering::SeqCst) {
         // debug!("waiting...");

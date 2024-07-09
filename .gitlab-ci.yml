@@ -8,8 +8,8 @@ build-message-bus:
   cache:
     - key:
         files:
-          - ./core/message-bus/Cargo.lock
-          - ./core/message-bus/target/CACHEDIR.TAG
+          - core/message-bus/Cargo.lock
+          - core/message-bus/target/CACHEDIR.TAG
       paths:
         - core/message-bus/target/debug/build
         - core/message-bus/target/debug/deps
@@ -35,7 +35,7 @@ message-bus-test:
   only:
     - main
 
-lsp-test:
+linter-test:
   stage: test
   image: rust:1.79-bookworm
   before_script:
@@ -43,11 +43,11 @@ lsp-test:
   cache:
     - key:
         files:
-          - ./core/lsp/Cargo.lock
-          - ./core/lsp/target/CACHEDIR.TAG
+          - core/linter/Cargo.lock
+          - core/linter/target/CACHEDIR.TAG
       paths:
-        - core/lsp/target/debug/build
-        - core/lsp/target/debug/deps
+        - core/linter/target/debug/build
+        - core/linter/target/debug/deps
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
@@ -66,8 +66,8 @@ todo-test:
   cache:
     - key:
         files:
-          - ./core/todo-collector/Cargo.lock
-          - ./core/todo-collector/target/CACHEDIR.TAG
+          - core/todo-collector/Cargo.lock
+          - core/todo-collector/target/CACHEDIR.TAG
       paths:
         - core/todo-collector/target/debug/build
         - core/todo-collector/target/debug/deps

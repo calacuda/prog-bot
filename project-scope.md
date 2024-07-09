@@ -15,9 +15,10 @@ This document describes the overall design and goals of the Prog-Bot project.
 	- have a GUI to show TODOs and classify/organize/silence them
 	- have a UUID generator to easily tag TODOs
 - ask questions about the code if I'm quiet for too long (this question asker should be contextually aware of the TODOs and of current errors)
-- alert on [rust-analyzer](https://rust-analyzer.github.io/) errors when saving the file
+- alert on [cargo-clippy](https://doc.rust-lang.org/clippy/) errors when saving the file
 - alert on GitHub/GitLab CI/CD fails/successes
-- alert when rust-analyzer is ready to analyze a newly oppened project
+- alert when cargo-clippy is ready to analyze a newly oppened project
+- vocal [rust-analyzer](https://rust-analyzer.github.io/) interface (find definition of ____, read documentation for ____, etc)
 
 each "skill" can be its own process communicating using a message-bus
 
@@ -62,6 +63,7 @@ List of Nodes:
 6. TTS node (should probably run on the streaming machine. or setup [Mimic3](https://mycroft-ai.gitbook.io/docs/mycroft-technologies/mimic-tts/mimic-3) as a server and connect to it from a client running on the streaming machine)
 7. [rust-analyzer](https://rust-analyzer.github.io/) node
 8. stenographer to keep a log of all things the user says to the chat-bot and every thing prog-bot says (regardless of the node that generates it)
+9. [cargo-clippy](https://doc.rust-lang.org/clippy/)
 
 ## Node Trigger Events
 
