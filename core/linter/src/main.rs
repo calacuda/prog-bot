@@ -26,7 +26,7 @@ use tracing::*;
 #[cfg(test)]
 mod test;
 
-async fn talk_with_message_bus(
+pub async fn talk_with_message_bus(
     tx: UnboundedSender<PathBuf>,
     mut reader: SplitStream<WebSocketStream<impl AsyncRead + AsyncWrite + Unpin>>,
 ) -> Result<()> {
@@ -55,7 +55,7 @@ async fn talk_with_message_bus(
     Ok(())
 }
 
-async fn process_messages(
+pub async fn process_messages(
     mut rx: UnboundedReceiver<PathBuf>,
     mut writer: SplitSink<WebSocketStream<impl AsyncRead + AsyncWrite + Unpin>, Message>,
     uuid: Uuid,
@@ -64,7 +64,7 @@ async fn process_messages(
         // run cargo check / clippy & record output
         if let Ok(res) = Command::new("cargo")
             .arg("check")
-            .current_dir(file_path.parent().unwrap())
+            .current_dir(file_path)
             .output()
             .await
         {
@@ -84,7 +84,7 @@ async fn process_messages(
                 if lines[0].is_empty() && lines[1].starts_with("error") {
                     // Speak
                     let file_line_num = lines[2]
-                        .replace("  --> ", "")
+                        .replace("-->", "")
                         .replace(".rs:", " dot R S on line ");
 
                     let message = format!("{} in file: {file_line_num}", lines[1]);
