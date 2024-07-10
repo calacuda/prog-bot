@@ -1,0 +1,86 @@
+// var = @{ ASCII_ALPHA }
+// 
+// range = @{ var ~ "=" ~ num ~ "_" ~ num }
+// riemann_expr = _{ range ~ riemann ~ "(" ~ expr ~ ")" }
+// 
+// num = @{ unary_minus? ~ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
+//   int = @{ ASCII_DIGIT+ }
+// 
+// unary_minus = _{ "-" }
+// negative = { unary_minus ~ primary }
+// primary = _{ riemann_expr | var | num | num? ~ "(" ~ (expr | var | riemann_expr) ~ ")" }
+// atom = _{ riemann_expr | primary | var | negative }
+// 
+// bin_op = _{ add | subtract | multiply | divide | modulo | power | riemann }
+// 	add = { "+" }
+// 	subtract = { "-" }
+// 	multiply = { "*" }
+// 	divide = { "/" }
+// 	modulo = { "%" }
+// 	power = { "^" }
+// 	riemann = { "$" }
+// 
+// expr = { (atom ~ (bin_op ~ atom)*) | EOI }
+// 
+// // We can't have SOI and EOI on expr directly, because it is used recursively (e.g. with parentheses)
+// equation = _{ SOI ~ expr }
+// 
+// WHITESPACE = _{ " " | "\t" }
+
+WHITESPACE = _{ " "+ | "\t" }
+NEWLINE = _{ "\n" | "\r\n" }
+
+comment_start = _{ WHITESPACE* ~ ( "//" | "///" | "/*" ) ~ WHITESPACE? }
+comment_end = _{ "*/" | NEWLINE }
+
+colon = _{ ":" }
+var_name = { (ASCII_ALPHANUMERIC | "_" )+ }
+data_type = { (ASCII_ALPHANUMERIC | "_" | "&" | " " | "<" | ">")* }
+
+// todo defs
+todo_label = { (^"todo" | ^"fixme" | ^"bug" | ^"note" | ^"hack" | ^"optimize") ~ ":"? }
+octet = _{ ASCII_HEX_DIGIT ~ ASCII_HEX_DIGIT }
+two_octets = _{ octet ~ octet }
+four_octets = _{ two_octets ~ two_octets }
+six_octets = _{ four_octets ~ two_octets }
+todo_uuid = { comment_start? ~ four_octets ~ "-" ~ two_octets ~ "-" ~ two_octets ~ "-" ~ two_octets ~ "-" ~ six_octets }
+// todo_ =
+// todo_ =
+message_body = { comment_start? ~ (' '..'~')* }
+
+todo_body = { todo_label ~ NEWLINE? ~ ( (todo_uuid ~ (NEWLINE | WHITESPACE)? ~ message_body) | (message_body ~ (NEWLINE | WHITESPACE)? ~ todo_uuid) ) }
+// todo_body = { todo_lable ~ ( (todo_uuid ~ message_body) | (message_body ~ todo_uuid) ) }
+
+todo = { comment_start ~ todo_body ~ comment_end }
+
+// func defs
+func_return_type = { WHITESPACE* ~ "->" ~ data_type }
+function_arg = { var_name ~ data_type ~ ","? }
+func_name = { (ASCII_ALPHANUMERIC | "_" )+ }
+func_declaration = { "pub"? ~ "async"? ~ "fn" ~ func_name ~ "(" ~ (NEWLINE? ~ function_arg+ ~ "," ~ NEWLINE?)? ~ ")" ~ func_return_type? ~ "{" ~ NEWLINE }
+func_end = _{ "}" }
+any_ol_code = _{ WHITESPACE* ~ ( ASCII_ALPHANUMERIC | ('!'..'~') | WHITESPACE )* ~ ";"? ~ NEWLINE }
+func = { func_declaration ~ ( todo | any_ol_code | NEWLINE )* ~ func_end }
+
+// struct defs
+struct_name = { ASCII_ALPHANUMERIC* }
+struct_start = { "pub"? ~ "struct" ~ struct_name ~ ( ( "(" ~ ( ( data_type ~ "," )* ~ data_type )? ~ ")" ~ NEWLINE) | ("{" ~ NEWLINE) ) }
+struct_end = _{ ("}" | ";") }
+struct_line = { WHITESPACE* ~ "pub"? ~ var_name ~ colon ~ data_type ~ "," ~ NEWLINE}
+struct = { struct_start ~ ( todo | struct_line )* ~ struct_end }
+
+// enum defs
+enum_name = { ASCII_ALPHANUMERIC* }
+enum_start = { "pub"? ~ "enum" ~ enum_name ~  "{" ~ ( NEWLINE | enum_end ) }
+enum_end = _{ "}" }
+enum_line = { WHITESPACE* ~ var_name ~ ("(" ~ data_type ~ ")")? ~ "," ~ NEWLINE }
+enum = { enum_start ~ ( todo | enum_line )* ~ enum_end }
+
+blank_line = _{ NEWLINE }
+// line = { todo ~ NEWLINE? }
+// line = { (todo | func | struct | enum) ~ NEWLINE }
+// TODO: add macro
+line = _{ (todo | func | struct | enum | ANY) }
+
+tokens = _{ SOI ~ line* ~ EOI }
+
