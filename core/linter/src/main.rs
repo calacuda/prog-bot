@@ -148,7 +148,7 @@ async fn main() -> Result<()> {
 
     spawn(async move {
         if let Err(e) = process_messages(from_mb_rx, write, uuid).await {
-            error!("connection with messagebus encountered an error: {e}");
+            error!("file linting process encountered an error: {e}");
             r.store(false, Ordering::SeqCst);
         }
     });
