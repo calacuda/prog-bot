@@ -1,4 +1,5 @@
 use anyhow::Result;
+use ast::Todos;
 use futures_util::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
@@ -15,6 +16,7 @@ use std::{
     },
 };
 use tokio::{
+    fs::read_to_string,
     io::{AsyncRead, AsyncWrite},
     spawn,
     sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
@@ -237,6 +239,43 @@ pub async fn process_messages(
         //         }
         //     }
         // }
+
+        // get todos from file
+        let file_contents = read_to_string(file_path.clone()).await?;
+
+        // parse tokens
+        let todos = Todos::from_source(&file_contents, file_path.into());
+
+        // send todo messages to server
+        let messages: Vec<Message> = todos
+            .into_iter()
+            .filter_map(|todo| {
+                if let Ok(data) = serde_json::to_value(todo) {
+                    if let Ok(msg) = serde_json::to_string(&ProgBotMessage {
+                        msg_type: ProgBotMessageType::FoundTodo,
+                        context: ProgBotMessageContext {
+                            sender: Some(uuid),
+                            response_to: None,
+                        },
+                        data,
+                    }) {
+                        Some(Message::Text(msg))
+                    } else {
+                        error!("failed to serialize ProgBotMessage");
+                        None
+                    }
+                } else {
+                    error!("failed to serialize todo");
+                    None
+                }
+            })
+            .collect();
+
+        for msg in messages.into_iter() {
+            if let Err(e) = writer.send(msg).await {
+                error!("failed to allert on new todo. got error: {e}");
+            }
+        }
     }
 
     Ok(())

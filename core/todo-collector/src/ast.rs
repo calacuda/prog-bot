@@ -2,7 +2,6 @@ use crate::{Enum, FileLocation, Function, Scope, Struct, Todo, TodoType};
 use anyhow::{bail, Result};
 use pest::{iterators::Pairs, Parser};
 use serde::{Deserialize, Serialize};
-use std::ops::IndexMut;
 use std::{path::PathBuf, str::FromStr};
 use tracing::*;
 
