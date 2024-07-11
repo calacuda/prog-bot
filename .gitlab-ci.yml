@@ -22,6 +22,7 @@ build-message-bus:
     - cargo build
   only:
     - main
+    - dev
 
 message-bus-test:
   stage: test
