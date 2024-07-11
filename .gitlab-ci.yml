@@ -14,7 +14,9 @@ build-message-bus:
         - core/message-bus/target/debug/build
         - core/message-bus/target/debug/deps
         - core/message-bus/target/debug/prog-bot-message-bus
-        - core/message-bus/target/debug/prog-bot-message-bus.d
+        - core/message-bus/target/debug/prog-
+        - ~/.cargo/git/
+        - ~/.cargo/registry/bot-message-bus.d
   script:
     - cd ./core/message-bus/
     - cargo build
@@ -49,6 +51,8 @@ linter-test:
       paths:
         - core/linter/target/debug/build
         - core/linter/target/debug/deps
+        - ~/.cargo/git/
+        - ~/.cargo/registry/
   script:
     - cd ./core/message-bus/
     - cargo check
@@ -73,6 +77,8 @@ todo-test:
       paths:
         - core/todo-collector/target/debug/build
         - core/todo-collector/target/debug/deps
+        - ~/.cargo/git/
+        - ~/.cargo/registry/
   script:
     - cd ./core/message-bus/
     - cargo check
