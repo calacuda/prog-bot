@@ -54,7 +54,7 @@ async fn server_subscribe_to_positive_runner() -> Result<()> {
 
     debug!("message sent");
 
-    if let Some(Ok(message)) = read.next().await {
+    if let Ok(Some(Ok(message))) = timeout(Duration::from_secs(10), read.next()).await {
         debug!("message {message:?}");
 
         match message {
