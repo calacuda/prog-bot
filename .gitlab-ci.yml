@@ -29,7 +29,7 @@ message-bus-test:
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
-    - sleep 2
+    - sleep 5
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
@@ -51,7 +51,7 @@ linter-test:
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
-    - sleep 2
+    - sleep 5
     - cd ../linter
     - cargo test
     - tmux kill-session -t "messagebus-test"
@@ -74,7 +74,7 @@ todo-test:
   script:
     - cd ./core/message-bus/
     - tmux new -ds "messagebus-test" "cargo run"
-    - sleep 2
+    - sleep 5
     - cd ../todo-collector/
     - cargo test
     - tmux kill-session -t "messagebus-test"
