@@ -28,6 +28,7 @@ message-bus-test:
     - apt-get update -y && apt-get install -y tmux
   script:
     - cd ./core/message-bus/
+    - cargo build
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 5
     - cargo test
@@ -50,6 +51,7 @@ linter-test:
         - core/linter/target/debug/deps
   script:
     - cd ./core/message-bus/
+    - cargo check
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 5
     - cd ../linter
@@ -73,6 +75,7 @@ todo-test:
         - core/todo-collector/target/debug/deps
   script:
     - cd ./core/message-bus/
+    - cargo check
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 5
     - cd ../todo-collector/
