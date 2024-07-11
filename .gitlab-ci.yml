@@ -22,7 +22,7 @@ build-message-bus:
     - main
     - dev
 
-message-bus-test:
+message-bus:
   stage: test
   image: rust:1.79-bookworm
   before_script:
@@ -38,7 +38,7 @@ message-bus-test:
     - main
     - dev
 
-linter-test:
+linter:
   stage: test
   image: rust:1.79-bookworm
   before_script:
@@ -62,7 +62,7 @@ linter-test:
   only:
     - main
 
-todo-test:
+todo-collector:
   stage: test
   image: rust:1.79-bookworm
   before_script:
