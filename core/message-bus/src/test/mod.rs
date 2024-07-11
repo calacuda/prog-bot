@@ -31,7 +31,7 @@ async fn server_subscribe_to_positive_runner() -> Result<()> {
     sub_to.insert(ProgBotMessageType::Speak);
     let (uuid, (mut write, mut read)) = connect_to_messagebus(sub_to).await?;
 
-    debug!("connected");
+    println!("connected");
 
     let mesg = ProgBotMessage {
         msg_type: ProgBotMessageType::Speak,
@@ -43,7 +43,7 @@ async fn server_subscribe_to_positive_runner() -> Result<()> {
     };
 
     sleep(Duration::from_secs(1)).await;
-    debug!("message sending");
+    println!("message sending");
 
     if let Err(e) = write
         .send(Message::Text(serde_json::to_string(&mesg)?))
@@ -52,31 +52,35 @@ async fn server_subscribe_to_positive_runner() -> Result<()> {
         info!("failed to send message to message bus. failed with error {e}");
     }
 
-    debug!("message sent");
+    println!("message sent");
 
     if let Ok(Some(Ok(message))) = timeout(Duration::from_secs(10), read.next()).await {
-        debug!("message {message:?}");
+        println!("message {message:?}");
 
         match message {
             Message::Text(msg) => match serde_json::from_str::<ProgBotMessage>(&msg) {
                 Ok(msg) => {
-                    debug!("msg {msg:?}");
+                    println!("msg {msg:?}");
 
                     if msg.msg_type != ProgBotMessageType::Speak {
-                        bail!("read message of wrong type");
+                        let msg = "read message successfully but message had wrong type.";
+                        println!("{msg}");
+                        bail!(msg);
                     } else {
                         Ok(())
                     }
                 }
                 Err(e) => {
-                    error!("{e}");
+                    println!("{e}");
                     bail!("failed to decipher message bus. failed with error {e}");
                 }
             },
             _ => unreachable!("this message should never be returned"),
         }
     } else {
-        bail!("failed to read message");
+        let msg = "failed to read message";
+        error!(msg);
+        bail!(msg);
     }
 }
 
@@ -88,7 +92,7 @@ async fn server_subscribe_to_positive() {
     // sleep(Duration::from_secs(2)).await;
 
     let res = server_subscribe_to_positive_runner().await;
-    info!("{res:?}");
+    println!("{res:?}");
 
     assert!(res.is_ok())
 }
