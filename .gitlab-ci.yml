@@ -53,9 +53,9 @@ linter:
         - core/linter/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo check
+    - cargo build
     - tmux new -ds "messagebus-test" "cargo run"
-    - sleep 5
+    - sleep 10
     - cd ../linter
     - cargo test
     - tmux kill-session -t "messagebus-test"
@@ -77,7 +77,7 @@ todo-collector:
         - core/todo-collector/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo check
+    - cargo build
     - tmux new -ds "messagebus-test" "cargo run"
     - sleep 5
     - cd ../todo-collector/
