@@ -11,7 +11,6 @@ actix-web = { version = "4.8.0", default-features = false, features = ["macros"]
 actix-web-actors = "4.3.0"
 anyhow = { version = "1.0.86", features = ["backtrace"] }
 ctrlc = "3.4.4"
-event-emitter-rs = "0.1.4"
 prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
 prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
 serde = { version = "1.0.204", features = ["derive"] }

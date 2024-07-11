@@ -26,11 +26,6 @@ async fn parser() {
 }
 
 #[tokio::test]
-async fn message_bus_send() {
-    // TODO: write
-}
-
-#[tokio::test]
-async fn message_bus_recv() {
+async fn message_bus() {
     // TODO: write
 }

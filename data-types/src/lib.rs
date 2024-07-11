@@ -32,6 +32,7 @@ pub fn empty_map() -> Value {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Configuration {
     pub websocket: WebsocketConf,
+    pub webhook: WebHookConf,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -41,6 +42,12 @@ pub struct WebsocketConf {
     pub route: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct WebHookConf {
+    pub host: String,
+    pub port: u16,
+}
+
 impl Configuration {
     pub fn get() -> Self {
         Self {
@@ -48,6 +55,10 @@ impl Configuration {
                 host: "127.0.0.1".into(),
                 port: 8080,
                 route: "message-bus".into(),
+            },
+            webhook: WebHookConf {
+                host: "127.0.0.1".into(),
+                port: 8080,
             },
         }
     }

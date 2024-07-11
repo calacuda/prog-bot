@@ -8,8 +8,7 @@ use tokio::{select, time::timeout};
 use tokio_tungstenite::tungstenite::Message;
 
 async fn server_syn_ack_runner() -> Result<()> {
-    sleep(Duration::from_secs(2)).await;
-
+    // sleep(Duration::from_secs(2)).await;
     let (_uuid, (_write, _read)) = connect_to_messagebus(HashSet::new()).await?;
 
     Ok(())
