@@ -15,7 +15,7 @@ pub struct ProgBotMessage {
     pub context: ProgBotMessageContext,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Default, Copy)]
 pub struct ProgBotMessageContext {
     /// uuid of sender
     pub sender: Option<Uuid>,
@@ -46,6 +46,7 @@ pub struct WebsocketConf {
 pub struct WebHookConf {
     pub host: String,
     pub port: u16,
+    pub secret: String,
 }
 
 impl Configuration {
@@ -59,6 +60,7 @@ impl Configuration {
             webhook: WebHookConf {
                 host: "0.0.0.0".into(),
                 port: 8888,
+                secret: "foobar".into(),
             },
         }
     }

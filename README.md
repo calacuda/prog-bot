@@ -16,10 +16,10 @@ currently working on MVP versions
 - [x] todo-collector
 - [ ] text to speech
 - [ ] utterance detection
-- [ ] webhook-intake
-    - [ ] need to make it send speak messages too
-    - [ ] add tests
-    - [ ] validate the webhook sender using the sercret
+- [x] webhook-intake
+    - [x] need to make it send speak messages too
+    - [x] add tests
+    - [x] validate the webhook sender using the sercret
 
 ## TODO
 

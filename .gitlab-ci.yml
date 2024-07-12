@@ -85,3 +85,27 @@ todo-collector:
     - tmux kill-session -t "messagebus-test"
   only:
     - main
+
+web-hook-intake:
+  stage: test
+  image: rust:1.79-bookworm
+  before_script:
+    - apt-get update -y && apt-get install -y tmux
+  cache:
+    - key:
+        files:
+          - core/todo-collector/Cargo.lock
+          - core/todo-collector/target/CACHEDIR.TAG
+      paths:
+        - core/todo-collector/target/debug/build
+        - core/todo-collector/target/debug/deps
+  script:
+    - cd ./core/message-bus/
+    - cargo build
+    - tmux new -ds "messagebus-test" "cargo run"
+    - sleep 5
+    - cd ../web-hook-intake/
+    - cargo test
+    - tmux kill-session -t "messagebus-test"
+  only:
+    - main
