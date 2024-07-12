@@ -76,11 +76,12 @@ todo-collector:
         - core/todo-collector/target/debug/build
         - core/todo-collector/target/debug/deps
   script:
-    - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
-    - sleep 5
-    - cd ../todo-collector/
+    # - cd ./core/message-bus/
+    # - cargo build
+    # - tmux new -ds "messagebus-test" "cargo run"
+    # - sleep 5
+    # - cd ../todo-collector/
+    - cd ./core/todo-collector/
     - cargo test
     - tmux kill-session -t "messagebus-test"
   only:
