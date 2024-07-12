@@ -53,8 +53,8 @@ linter:
         - core/linter/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
+    # - cargo build
+    - tmux new -ds "messagebus-test" "core/message-bus/target/debug/prog-bot-message-bus"
     - sleep 10
     - cd ../linter
     - cargo test
@@ -77,8 +77,8 @@ todo-collector:
         - core/todo-collector/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
+    # - cargo build
+    - tmux new -ds "messagebus-test" "core/message-bus/target/debug/prog-bot-message-bus"
     - sleep 5
     - cd ../todo-collector/
     - cargo test
@@ -101,8 +101,8 @@ web-hook-intake:
         - core/todo-collector/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
+    # - cargo build
+    - tmux new -ds "messagebus-test" "core/message-bus/target/debug/prog-bot-message-bus"
     - sleep 5
     - cd ../web-hook-intake/
     - cargo test
