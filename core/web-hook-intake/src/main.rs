@@ -53,10 +53,11 @@ async fn github(
 async fn gitlab(
     // data: web::Data<Addr<MessageEvent>>,
     write: web::Data<Mutex<UnboundedSender<WebHookData>>>,
-    _req: HttpRequest,
+    req: HttpRequest,
     // stream: web::Payload,
 ) -> Result<String, Error> {
     info!("got gitlab webhooks");
+    println!("{req:?}");
 
     let _ = write
         .lock()
@@ -117,8 +118,6 @@ pub async fn start(configs: Configuration) -> Result<()> {
     // let msg_event_addr = web::Data::new(MessageEvent.start());
     let write = web::Data::new(write);
     let config = web::Data::new(Configuration::get());
-
-    // TODO: add end points for file save and load
 
     HttpServer::new(move || {
         App::new()

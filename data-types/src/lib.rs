@@ -57,8 +57,8 @@ impl Configuration {
                 route: "message-bus".into(),
             },
             webhook: WebHookConf {
-                host: "127.0.0.1".into(),
-                port: 8080,
+                host: "0.0.0.0".into(),
+                port: 8888,
             },
         }
     }
