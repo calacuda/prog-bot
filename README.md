@@ -17,7 +17,9 @@ currently working on MVP versions
 - [ ] text to speech
 - [ ] utterance detection
 - [ ] webhook-intake
-
+    - [ ] need to make it send speak messages too
+    - [ ] add tests
+    - [ ] validate the webhook sender using the sercret
 
 ## TODO
 
