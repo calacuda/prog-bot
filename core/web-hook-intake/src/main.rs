@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc, Mutex,
@@ -8,9 +8,9 @@ use std::{
 };
 
 use actix::{clock::sleep, spawn};
-use actix_web::{web, App, Error, HttpRequest, HttpServer};
+use actix_web::{error, web, App, Error, HttpRequest, HttpServer};
 use anyhow::Result;
-use futures_util::SinkExt;
+use futures_util::{SinkExt, StreamExt};
 use prog_bot_common::{
     connect_to_messagebus, start_logging,
     tokio::sync::mpsc::{unbounded_channel, UnboundedSender},
@@ -19,50 +19,134 @@ use prog_bot_data_types::{
     Configuration, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::*;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GitHubWebHook {}
+const MAX_SIZE: usize = 262_144; // max payload size is 256k
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GitLabWebHook {}
+pub struct GitHubWebhook {}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GitlabPipeline {
+    pub project_name: String,
+    pub duration: f64,
+    pub status: String,
+    pub failed_jobs: Vec<GitlabBuild>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GitlabBuild {
+    id: usize,
+    pub name: String,
+    pub status: String,
+    pub stage: String,
+    pub durration: f64,
+    created_at: String,
+    started_at: String,
+    finished_at: String,
+    queued_duration: f64,
+    failure_reason: Option<Value>,
+    when: String,
+    manual: String,
+    allow_failure: bool,
+    user: Value,
+    runner: Value,
+    artifacts_file: Value,
+    environment: Option<Value>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GitlabJob {
+    pub name: String,
+    pub status: String,
+    pub stage: String,
+    pub durration: f64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum GitlabWebhook {
+    Pipeline(GitlabPipeline),
+    Job(GitlabJob),
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum WebHookData {
-    GitHub(GitHubWebHook),
-    GitLab(GitLabWebHook),
+    GitHub(GitHubWebhook),
+    Gitlab(GitlabWebhook),
 }
 
 async fn github(
-    // data: web::Data<Addr<MessageEvent>>,
     write: web::Data<Mutex<UnboundedSender<WebHookData>>>,
     _req: HttpRequest,
-    // stream: web::Payload,
+    _payload: web::Payload,
 ) -> Result<String, Error> {
     info!("got github webhooks");
 
     let _ = write
         .lock()
         .unwrap()
-        .send(WebHookData::GitHub(GitHubWebHook {}));
+        .send(WebHookData::GitHub(GitHubWebhook {}));
 
     Ok(String::new())
 }
 
 async fn gitlab(
-    // data: web::Data<Addr<MessageEvent>>,
     write: web::Data<Mutex<UnboundedSender<WebHookData>>>,
     req: HttpRequest,
-    // stream: web::Payload,
+    mut payload: web::Payload,
 ) -> Result<String, Error> {
     info!("got gitlab webhooks");
-    println!("{req:?}");
+    // println!("req => {req:?}");
+    // println!("payload => {payload:?}");
+    // TODO: validate secret
 
-    let _ = write
-        .lock()
-        .unwrap()
-        .send(WebHookData::GitLab(GitLabWebHook {}));
+    // payload is a stream of Bytes objects
+    let mut body = web::BytesMut::new();
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+        // limit max size of in-memory payload
+        if (body.len() + chunk.len()) > MAX_SIZE {
+            return Err(error::ErrorBadRequest("overflow"));
+        }
+        body.extend_from_slice(&chunk);
+    }
+
+    let Ok(body) = serde_json::from_str::<Value>(&String::from_utf8_lossy(&body)) else {
+        return Err(error::ErrorBadRequest("malformed json"));
+    };
+
+    let data = if body["object_kind"] == "pipeline" {
+        GitlabWebhook::Pipeline(GitlabPipeline {
+            project_name: serde_json::from_value(body["project"]["name"].clone()).unwrap(),
+            status: serde_json::from_value(body["object_attributes"]["status"].clone()).unwrap(),
+            failed_jobs: serde_json::from_value::<Vec<GitlabBuild>>(body["builds"].clone())
+                .unwrap()
+                .into_iter()
+                .filter_map(|job| {
+                    if job.status != "success" {
+                        Some(job)
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
+            duration: serde_json::from_value(body["object_attributes"]["duration"].clone())
+                .unwrap(),
+        })
+    } else if body["object_kind"] == "job" {
+        GitlabWebhook::Job(GitlabJob {
+            name: serde_json::from_value(body["build_name"].clone()).unwrap(),
+            status: serde_json::from_value(body["build_status"].clone()).unwrap(),
+            stage: serde_json::from_value(body["build_stage"].clone()).unwrap(),
+            durration: serde_json::from_value(body["build_duration"].clone()).unwrap(),
+        })
+    } else {
+        return Err(error::ErrorBadRequest("wrong webhook type"));
+    };
+
+    let _ = write.lock().unwrap().send(WebHookData::Gitlab(data));
 
     Ok(String::new())
 }
@@ -82,15 +166,16 @@ pub async fn start(configs: Configuration) -> Result<()> {
     spawn(async move {
         while let Some(raw_hook_data) = read.recv().await {
             let data = match raw_hook_data {
-                WebHookData::GitHub(_data) => {
-                    // TODO: Parse GitHub data and return serde_json Value,
+                WebHookData::GitHub(data) => {
                     debug!("got github webhook data...");
-                    serde_json::to_value(HashMap::<String, String>::new())
+
+                    serde_json::to_value(data)
                 }
-                WebHookData::GitLab(_data) => {
-                    // TODO: Parse GitLab data and return serde_json value
+                WebHookData::Gitlab(data) => {
                     debug!("got gitlab webhook data...");
-                    serde_json::to_value(HashMap::<String, String>::new())
+                    println!("{data:?}");
+
+                    serde_json::to_value(data)
                 }
             };
 
@@ -116,7 +201,7 @@ pub async fn start(configs: Configuration) -> Result<()> {
     });
 
     // let msg_event_addr = web::Data::new(MessageEvent.start());
-    let write = web::Data::new(write);
+    let write = web::Data::new(Mutex::new(write));
     let config = web::Data::new(Configuration::get());
 
     HttpServer::new(move || {
@@ -124,8 +209,8 @@ pub async fn start(configs: Configuration) -> Result<()> {
             // .app_data(msg_event_addr.clone())
             .app_data(write.clone())
             .app_data(config.clone())
-            .route("/github", web::get().to(github))
-            .route("/gitlab", web::get().to(gitlab))
+            .route("github", web::post().to(github))
+            .route("gitlab", web::post().to(gitlab))
         // .service(index)
     })
     .bind((configs.webhook.host, configs.webhook.port))?
