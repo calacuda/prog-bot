@@ -42,14 +42,14 @@ pub struct GitlabBuild {
     pub name: String,
     pub status: String,
     pub stage: String,
-    pub durration: f64,
+    pub duration: f64,
     created_at: String,
     started_at: String,
     finished_at: String,
     queued_duration: f64,
     failure_reason: Option<Value>,
     when: String,
-    manual: String,
+    manual: bool,
     allow_failure: bool,
     user: Value,
     runner: Value,
@@ -135,7 +135,7 @@ async fn gitlab(
             duration: serde_json::from_value(body["object_attributes"]["duration"].clone())
                 .unwrap(),
         })
-    } else if body["object_kind"] == "job" {
+    } else if body["object_kind"] == "build" {
         GitlabWebhook::Job(GitlabJob {
             name: serde_json::from_value(body["build_name"].clone()).unwrap(),
             status: serde_json::from_value(body["build_status"].clone()).unwrap(),
