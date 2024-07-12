@@ -83,7 +83,7 @@ todo-collector:
     # - cd ../todo-collector/
     - cd ./core/todo-collector/
     - cargo test
-    - tmux kill-session -t "messagebus-test"
+    # - tmux kill-session -t "messagebus-test"
   only:
     - main
 
@@ -108,6 +108,6 @@ web-hook-intake:
     # - cd ../web-hook-intake/
     - cd ./core/web-hook-intake/
     - cargo test
-    - tmux kill-session -t "messagebus-test"
+    # - tmux kill-session -t "messagebus-test"
   only:
     - main
