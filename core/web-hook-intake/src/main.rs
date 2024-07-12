@@ -31,7 +31,7 @@ pub struct GitHubWebhook {}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GitlabPipeline {
     pub project_name: String,
-    pub duration: f64,
+    pub duration: Option<f64>,
     pub status: String,
     pub failed_jobs: Vec<GitlabBuild>,
 }
@@ -42,11 +42,11 @@ pub struct GitlabBuild {
     pub name: String,
     pub status: String,
     pub stage: String,
-    pub duration: f64,
+    pub duration: Option<f64>,
     created_at: String,
     started_at: String,
     finished_at: String,
-    queued_duration: f64,
+    queued_duration: Option<f64>,
     failure_reason: Option<Value>,
     when: String,
     manual: bool,
@@ -62,7 +62,7 @@ pub struct GitlabJob {
     pub name: String,
     pub status: String,
     pub stage: String,
-    pub durration: f64,
+    pub durration: Option<f64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
