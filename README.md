@@ -14,7 +14,7 @@ currently working on MVP versions
 - [x] linter
 - [ ] LSP
 - [x] todo-collector
-- [ ] text to speech
+- [x] text to speech
 - [ ] utterance detection
 - [x] webhook-intake
     - [x] need to make it send speak messages too

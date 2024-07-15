@@ -1,0 +1,5 @@
+list:
+  just --list
+
+entr:
+  /usr/bin/ls src/**/*.rs Cargo.toml | entr cargo check

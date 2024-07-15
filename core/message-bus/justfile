@@ -4,3 +4,6 @@ test:
   sleep 2
   cargo test
   tmux kill-session -t "messagebus-test"
+
+entr:
+  /usr/bin/ls src/**/*.rs Cargo.toml | entr cargo check

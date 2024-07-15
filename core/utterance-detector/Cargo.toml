@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = { version = "1.0.86", features = ["backtrace"] }
+ctrlc = "3.4.4"
+futures-util = "0.3.30"
+prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
+prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
+serde_json = "1.0.120"
+tokio = { version = "1.38.0", features = ["full"] }
+tokio-tungstenite = "0.23.1"
+tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }
