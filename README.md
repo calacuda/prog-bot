@@ -12,14 +12,13 @@ currently working on MVP versions
 - [ ] chatbot
 - [ ] GUI
 - [x] linter
-- [ ] LSP
+<!-- - [ ] LSP -->
 - [x] todo-collector
+ - [x] update tests to include lsp functionality.
+ - [ ] fix struct detection
 - [x] text to speech
 - [ ] utterance detection
 - [x] webhook-intake
-    - [x] need to make it send speak messages too
-    - [x] add tests
-    - [x] validate the webhook sender using the sercret
 
 ## TODO
 

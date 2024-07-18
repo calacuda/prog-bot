@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashSet;
 
+pub mod lsp;
+
 pub type SubscribeTo = HashSet<ProgBotMessageType>;
 pub type Uuid = uuid::Uuid;
 
@@ -25,7 +27,6 @@ pub struct ProgBotMessageContext {
 }
 
 pub fn empty_map() -> Value {
-    // HashMap::new()
     json!({})
 }
 
@@ -112,6 +113,12 @@ pub enum ProgBotMessageType {
     Subscribe,
     /// unsubcribe from a subscribed message type
     Unsubscribe,
+    LspStartDir,
+    /// a message to the lsp server. data field contains command_type and additional arguments.
+    LspCommand,
+    /// alerts the location of a deffinition. the data feild is a map that contains three keys;
+    /// defined_term, term_type, file, def_start (line_num, col_num), def_end (line_num, col_num).
+    LspDefinitionLocation,
     /// sent to the message bus when a node first connects. it describes what messages it wishes to
     /// subscribe to.
     Syn,

@@ -42,7 +42,7 @@ async fn main() -> anyhow::Result<()> {
     let r = running.clone();
 
     ctrlc::set_handler(move || {
-        info!("terminating clippy node");
+        info!("terminating TTS node");
         r.store(false, Ordering::SeqCst);
     })
     .expect("Error setting Ctrl-C handler");
