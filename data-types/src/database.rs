@@ -1,7 +1,6 @@
-use crate::{ast::Definitions, data_types::Definition};
+use crate::{ast::Definitions, lsp::TermType, todo::Definition, Uuid};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use prog_bot_data_types::{lsp::TermType, Uuid};
 use rustc_hash::FxHashMap;
 use std::path::PathBuf;
 

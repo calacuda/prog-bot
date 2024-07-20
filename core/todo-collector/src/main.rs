@@ -1,16 +1,16 @@
 use anyhow::Result;
 use ast::Todos;
-use data_types::Definition;
 use database::DefenitionsDB;
 use futures_util::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
 };
 use prog_bot_common::{connect_to_messagebus, start_logging};
+// pub use prog_bot_data_types::ast;
 use prog_bot_data_types::{
-    lsp::LspCommand, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, Uuid,
+    database, lsp::LspCommand, todo::*, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType,
+    Uuid,
 };
-use serde::{Deserialize, Serialize};
 use std::{
     collections::HashSet,
     path::PathBuf,
@@ -33,91 +33,12 @@ use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 use tracing::*;
 
 pub mod ast;
-mod data_types;
-mod database;
+// mod data_types;
+// mod database;
 #[cfg(test)]
 mod test;
 
 type Defs = DefenitionsDB;
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct FileLocation {
-    pub file: PathBuf,
-    pub line_num: usize,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct Todo {
-    pub todo_type: TodoType,
-    // pub uuid: Uuid,
-    pub uuid: String,
-    pub message: String,
-    pub file_loc: FileLocation,
-    pub scope: Scope,
-    // pub : Option<>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct Function {
-    /// the name of the functions
-    pub name: String,
-    /// if the function is syncronouse or async (false if async)
-    pub asyncro: bool,
-    /// the location with in the file
-    pub file_loc: FileLocation,
-    // pub args: Vec<FunctionParam>,
-    pub return_type: Option<String>,
-    pub def_line: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionParam {
-    pub name: String,
-    pub param_type: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Struct {
-    /// the location with in the file
-    pub file_loc: FileLocation,
-    pub name: String,
-    pub def_line: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Enum {
-    /// the location with in the file
-    pub file_loc: FileLocation,
-    pub name: String,
-    pub def_line: String,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub enum Scope {
-    #[default]
-    Global,
-    Function(Function),
-    Struct(Struct),
-    Enum(Enum),
-    // TODO: add Macro & Var
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub enum TodoType {
-    /// generic TODO
-    #[default]
-    Todo,
-    /// indicates something that needs fixing & isn't compilling or is jank
-    FixMe,
-    /// indicates something compiles but isn't working correctly/as-intended and needs fixing
-    Bug,
-    /// a note about implementation (why something works, how something could be improved, etc)
-    Note,
-    /// indicates that something is a hack and should be fixed eventually
-    Hack,
-    /// means that the code needs to be optimized
-    Optimize,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {

@@ -2,7 +2,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashSet;
 
+pub mod ast;
+pub mod database;
 pub mod lsp;
+pub mod todo;
 
 pub type SubscribeTo = HashSet<ProgBotMessageType>;
 pub type Uuid = uuid::Uuid;

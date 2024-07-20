@@ -10,7 +10,7 @@ currently working on MVP versions
 
 - [x] message-bus
 - [ ] chatbot
-- [ ] GUI
+- [ ] GUI/TUI
 - [x] linter
 <!-- - [ ] LSP -->
 - [x] todo-collector

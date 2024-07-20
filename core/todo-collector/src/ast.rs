@@ -1,31 +1,15 @@
-use crate::{
-    data_types::{EnumDef, FuncDef, ModuleDef, StructDef, VarDef},
-    Enum, FileLocation, Function, Scope, Struct, Todo, TodoType,
-};
+use crate::{Enum, FileLocation, Function, Scope, Struct, Todo, TodoType};
 use anyhow::{bail, Result};
 use pest::{iterators::Pairs, Parser};
+use prog_bot_data_types::{
+    ast::Definitions,
+    todo::{EnumDef, FuncDef, StructDef},
+};
 use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, str::FromStr};
 use tracing::*;
 
-// type Output = Result<Vec<Todo>>;
 type Output = Result<Definitions>;
-
-// #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-// pub struct Tokens {
-//     pub todos: Vec<Todo>,
-//     pub defs: Definitions,
-// }
-
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Definitions {
-    pub todos: Vec<Todo>,
-    pub structs: Vec<StructDef>,
-    pub funcs: Vec<FuncDef>,
-    pub enums: Vec<EnumDef>,
-    pub vars: Vec<VarDef>,
-    pub mods: Vec<ModuleDef>,
-}
 
 #[derive(
     Debug, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, pest_derive::Parser,
@@ -199,29 +183,5 @@ impl Todos {
         defs.todos = defs.todos[1..].to_vec();
 
         Ok(defs)
-    }
-}
-
-impl FromStr for TodoType {
-    type Err = String;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let s = s.to_lowercase().replace(":", "");
-
-        Ok(if s == "todo" {
-            TodoType::Todo
-        } else if s == "fixme" {
-            TodoType::FixMe
-        } else if s == "bug" {
-            TodoType::Bug
-        } else if s == "note" {
-            TodoType::Note
-        } else if s == "hack" {
-            TodoType::Hack
-        } else if s == "optimize" {
-            TodoType::Optimize
-        } else {
-            return Err(format!("not a recognized todo type {s}"));
-        })
     }
 }

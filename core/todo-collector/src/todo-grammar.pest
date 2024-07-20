@@ -84,7 +84,7 @@ blank_line = _{ NEWLINE }
 // line = { todo ~ NEWLINE? }
 // line = { (todo | func | struct | enum) ~ NEWLINE }
 // TODO: add macro
-line = _{ (todo | struct | func | enum | NEWLINE | (' '..'~')) }
+line = _{ (todo | struct | enum | func | NEWLINE | (' '..'~')) }
 
 tokens = _{ SOI ~ line* ~ EOI }
 
