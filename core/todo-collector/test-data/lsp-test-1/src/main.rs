@@ -12,6 +12,8 @@ pub enum PubEnum {
     Variant2,
 }
 
+struct TupleStruct();
+
 enum PrivEnum {
     Variant1,
 }

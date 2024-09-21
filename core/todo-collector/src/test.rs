@@ -55,12 +55,12 @@ async fn lsp_test() {
     let res = res.unwrap();
     // assert!(false);
 
-    // assert_eq!(
-    //     res.funcs.len(),
-    //     13,
-    //     "wrong number of functions found, expected 13 found {}",
-    //     res.funcs.len()
-    // );
+    assert_eq!(
+        res.funcs.len(),
+        13,
+        "wrong number of functions found, expected 13 found {}",
+        res.funcs.len()
+    );
 
     assert_eq!(
         res.enums.len(),
@@ -71,8 +71,8 @@ async fn lsp_test() {
 
     assert_eq!(
         res.structs.len(),
-        2,
-        "wrong number of structs found, expected 2 found {}",
+        3,
+        "wrong number of structs found, expected 3 found {}",
         res.structs.len()
     );
 }

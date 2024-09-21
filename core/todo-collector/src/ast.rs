@@ -23,7 +23,7 @@ impl Todos {
         // println!("Compiling the source: {}", source);
         let tokens = Todos::parse(Rule::tokens, source); // parser::parse(source).unwrap();
         trace!("tokens => {:?}", tokens);
-        // println!("tokens => {:?}", tokens);
+        println!("tokens => {:#?}", tokens);
         Self::get_todos_from_scope(tokens?, file_path)
     }
 
@@ -62,17 +62,18 @@ impl Todos {
                     Err(e) => bail!(e),
                 },
                 Rule::todo_body => next_todo.message = token.as_str().replace("// ", "").into(),
-                Rule::struct_name => scope.push({
+                Rule::struct_name => {
+                    println!("======> Struct_name Found");
                     let mut file_loc = FileLocation::default();
                     file_loc.line_num = token.line_col().0;
                     file_loc.file = file_path.clone();
 
-                    Scope::Struct(Struct {
+                    scope.push(Scope::Struct(Struct {
                         name: token.as_str().into(),
                         file_loc,
                         def_line: def_line.clone(),
-                    })
-                }),
+                    }));
+                }
                 Rule::struct_start | Rule::enum_start => {
                     def_line = token.as_str().into();
                     // let mut most_recent_scope = scope.pop().unwrap();

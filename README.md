@@ -15,7 +15,8 @@ currently working on MVP versions
 <!-- - [ ] LSP -->
 - [x] todo-collector
  - [x] update tests to include lsp functionality.
- - [ ] fix struct detection
+ - [x] fix struct detection
+ - [ ] add block comments
 - [x] text to speech
 - [ ] utterance detection
 - [x] webhook-intake

@@ -31,11 +31,13 @@ WHITESPACE = _{ " " | "\t" }
 NEWLINE = _{ "\n" | "\r\n" }
 
 comment_start = _{ WHITESPACE* ~ ( "//" | "///" | "/*" ) ~ WHITESPACE* }
-comment_end = _{ WHITESPACE* ~ "*/" | NEWLINE }
-comment = { comment_start ~ (' '..'~')* ~ comment_end }
+comment_end = _{ "*/" | NEWLINE }
+// comment = { comment_start ~ (' '..'~')* ~ comment_end }
+comment = { comment_start ~ (!NEWLINE ~ ANY)* ~ comment_end }
 
 colon = _{ ":" }
 var_name = { (ASCII_ALPHANUMERIC | "_" )+ }
+var_w_type = { (ASCII_ALPHANUMERIC | "_" )+ ~ colon }
 data_type = { ( ASCII_ALPHANUMERIC | "_" | "&" | " " | "<" | ">" | "(" | ")" | "," | ":" )+ }
 
 // todo defs
@@ -52,39 +54,46 @@ message_body = { comment_start? ~ (' '..'~')* }
 todo_body = { todo_label ~ NEWLINE? ~ ( (todo_uuid ~ (NEWLINE | WHITESPACE)? ~ message_body) | (message_body ~ (NEWLINE | WHITESPACE)? ~ todo_uuid) ) }
 // todo_body = { todo_lable ~ ( (todo_uuid ~ message_body) | (message_body ~ todo_uuid) ) }
 
-todo = { comment_start ~ todo_body ~ comment_end }
+todo = { ( "//" | "///" ) ~ todo_body ~ comment_end }
 
 // func defs
 func_return_type = { "->" ~ data_type }
 function_arg = { var_name ~ ": " ~ data_type ~ ","? }
 func_name = { (ASCII_ALPHANUMERIC | "_" )+ }
 func_declaration = { "pub"? ~ "async"? ~ "fn" ~ func_name ~ "(" ~ (NEWLINE? ~ (function_arg ~ NEWLINE?)+)? ~ ")" ~ func_return_type? ~ "{" }
-func_end = { !"," ~ "}" }
+func_end = { "}" ~ NEWLINE }
 // any_ol_code = { WHITESPACE* ~ ( ' '..'~' )+ ~ ";" ~ NEWLINE }
 any_ol_code = { (!( ";" | NEWLINE ) ~ ( ' '..'~' ))+ ~ ( ";" | "{" ) ~ NEWLINE }
-return = { data_type ~ NEWLINE }
+return = { (!(NEWLINE | "}") ~ ANY)+ ~ NEWLINE }
 func = { func_declaration ~ NEWLINE? ~ ( todo | any_ol_code | WHITESPACE+ | comment | NEWLINE )* ~ return? ~ func_end }
 
 // struct defs
-struct_name = { ASCII_ALPHANUMERIC+ }
+struct_name = { (ASCII_ALPHA ~ ASCII_ALPHANUMERIC+) }
 struct_start = { "pub"? ~ "struct" ~ struct_name }
-struct_body = { "(" ~ ( ( data_type ~ "," )* ~ data_type )? ~ ")" }
-struct_end = { ("}" | ";") }
-struct_line = { "pub"? ~ var_name ~ colon ~ WHITESPACE ~ data_type ~ "," }
-struct = { struct_start ~ ( ( "{" ~ ( todo | struct_line | WHITESPACE+ | comment | NEWLINE )* ~ "}" ) | ( struct_body ~ ";" ~ NEWLINE ) ) }
+struct_body = { "(" ~ ( !")" ~ ANY )* ~ ")" }
+struct_end = { ("}" | ";") ~ NEWLINE }
+struct_line = { (!"," ~ !NEWLINE ~ !"}" ~ !"/" ~ ANY )+ ~ "," ~ &NEWLINE }
+reg_struct = _{ struct_start ~ "{" ~ NEWLINE?  ~ (( todo | comment | struct_line ) ~ NEWLINE?)* ~ struct_end }
+tuple_struct = _{ struct_start ~ struct_body ~ struct_end }
+struct = { (reg_struct | tuple_struct) }
 
 // enum defs
-enum_name = { ASCII_ALPHANUMERIC+ }
-enum_start = { "pub"? ~ "enum" ~ enum_name ~  "{" ~ ( NEWLINE | enum_end ) }
+enum_name = { (ASCII_ALPHA ~ ASCII_ALPHANUMERIC+) }
+enum_start = { "pub"? ~ "enum" ~ enum_name ~  "{" ~ ( NEWLINE | &enum_end ) }
 enum_end = { "}" }
-enum_line = { var_name ~ ("(" ~ data_type ~ ")")? ~ "," ~ NEWLINE }
+// enum_line = { var_name ~ ("(" ~ data_type ~ ")")? ~ "," ~ NEWLINE }
+enum_line = {(!"," ~ !NEWLINE ~ !"}" ~ !"/" ~ ANY )+ ~ "," ~ &NEWLINE}
 enum = { enum_start ~ ( todo | enum_line | WHITESPACE+ | comment | NEWLINE )* ~ enum_end }
+
+// derive
+derive = _{"#[" ~ (!"]" ~ ANY)+ ~ "]"}
 
 blank_line = _{ NEWLINE }
 // line = { todo ~ NEWLINE? }
 // line = { (todo | func | struct | enum) ~ NEWLINE }
 // TODO: add macro
-line = _{ (todo | struct | enum | func | NEWLINE | (' '..'~')) }
+// line = _{ (todo | struct | enum | func | NEWLINE | (' '..'~')) }
+line = _{ (todo | comment | derive | struct | enum | func | NEWLINE) }
 
 tokens = _{ SOI ~ line* ~ EOI }
 
