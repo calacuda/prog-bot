@@ -25,4 +25,5 @@ currently working on MVP versions
 
 - make this a single project
 - use lazy static to start the message bus when necessary (like for tests and stuff)
-- model github and gitlab web-hook data 
+- model github and gitlab web-hook data
+- handle utterace detection with a button press
