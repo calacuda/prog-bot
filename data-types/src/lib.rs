@@ -122,6 +122,7 @@ pub enum ProgBotMessageType {
     /// alerts the location of a deffinition. the data feild is a map that contains three keys;
     /// defined_term, term_type, file, def_start (line_num, col_num), def_end (line_num, col_num).
     LspDefinitionLocation,
+    LspResponce,
     /// sent to the message bus when a node first connects. it describes what messages it wishes to
     /// subscribe to.
     Syn,

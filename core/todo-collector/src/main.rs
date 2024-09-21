@@ -8,8 +8,10 @@ use futures_util::{
 use prog_bot_common::{connect_to_messagebus, start_logging};
 // pub use prog_bot_data_types::ast;
 use prog_bot_data_types::{
-    database, lsp::LspCommand, todo::*, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType,
-    Uuid,
+    database,
+    lsp::{LspCommand, LspResponse},
+    todo::*,
+    ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, Uuid,
 };
 use std::{
     collections::HashSet,
@@ -283,6 +285,22 @@ pub async fn process_lsp(
                     } else {
                         error!("failed to serialize progbot_message to json string.");
                     }
+                }
+
+                // TODO: send found defs
+            }
+            LspCommand::GetAllDefs => {
+                if let Ok(msg) = serde_json::to_string(&ProgBotMessage {
+                    msg_type: ProgBotMessageType::LspResponce,
+                    data: serde_json::to_value(&LspResponse::AllDefs(defs.lock().await.clone()))?,
+                    context: ProgBotMessageContext {
+                        sender: Some(uuid),
+                        response_to: None,
+                    },
+                }) {
+                    tx.send(msg)?;
+                } else {
+                    error!("failed to serialize progbot_message to json string.");
                 }
             }
         }

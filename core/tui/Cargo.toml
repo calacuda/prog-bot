@@ -1,5 +1,5 @@
 [package]
-name = "prog-bot-chat-bot"
+name = "prog-bot-tui"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,7 +10,9 @@ futures-util = "0.3.30"
 prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
 prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
 ratatui = { version = "0.27.0", features = ["macros", "serde"] }
+rustc-hash = { version = "2.0.0", features = ["nightly"] }
 serde_json = "1.0.120"
 tokio = { version = "1.38.0", features = ["full"] }
 tokio-tungstenite = "0.23.1"
 tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }
+# tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }

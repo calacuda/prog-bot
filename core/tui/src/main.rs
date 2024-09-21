@@ -1,4 +1,5 @@
 use anyhow::Result;
+use app_state::AppState;
 use ratatui::{
     backend::CrosstermBackend,
     crossterm::{
@@ -14,7 +15,8 @@ use std::io::{stdout, Stdout};
 
 mod app_state;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     // println!("Hello, world!");
 
     stdout().execute(EnterAlternateScreen)?;
@@ -26,23 +28,53 @@ fn main() -> Result<()> {
     stdout().execute(LeaveAlternateScreen)?;
     disable_raw_mode()?;
 
-    if let Err(e) = res {
+    if let Err(e) = res.await {
         eprintln!("drawing to term screen failed: {e}");
     }
 
     Ok(())
 }
 
-fn main_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
-    let mut state = AppState::new();
+async fn main_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
+    let mut state = AppState::new().await?;
 
     loop {
-        terminal.draw(|frame| ui(frame, state))?;
+        terminal.draw(|frame| ui(frame, &mut state))?;
 
         if event::poll(std::time::Duration::from_millis(16))? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
                     break;
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Esc
+                    && state.in_body
+                {
+                    state.in_body = false;
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Enter
+                    && !state.in_body
+                {
+                    state.in_body = true;
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Left
+                    && !state.in_body
+                {
+                    state.cycle_left();
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Right
+                    && !state.in_body
+                {
+                    state.cycle_right();
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Up
+                    && state.in_body
+                {
+                    state.up();
+                } else if key.kind == KeyEventKind::Press
+                    && key.code == KeyCode::Down
+                    && state.in_body
+                {
+                    state.down();
                 }
             }
         }
@@ -51,14 +83,12 @@ fn main_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
     Ok(())
 }
 
-fn ui(frame: &mut Frame, state: AppState) -> Result<()> {
+fn ui(frame: &mut Frame, state: &mut AppState) {
     let area = frame.size();
     frame.render_widget(
-        // Paragraph::new("Hello Ratatui! (press 'q' to quit)")
-        //     .white()
-        //     .on_blue(),
+        Paragraph::new("Hello Ratatui! (press 'q' to quit)")
+            .white()
+            .on_blue(),
         area,
     );
-
-    Ok(())
 }

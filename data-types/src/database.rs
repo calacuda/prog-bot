@@ -1,12 +1,18 @@
-use crate::{ast::Definitions, lsp::TermType, todo::Definition, Uuid};
+use crate::{
+    ast::Definitions,
+    lsp::{LspFoundDef, TermType},
+    todo::{Definition, FileLocation, StructDef},
+    Uuid,
+};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rustc_hash::FxHashMap;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 type Name = String;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DefenitionsDB {
     pub by_uuid: FxHashMap<Uuid, Definition>,
     by_file: FxHashMap<PathBuf, Vec<Uuid>>,
@@ -95,6 +101,95 @@ impl DefenitionsDB {
 
             self.by_file.get_mut(&file).unwrap().push(uuid);
         });
+    }
+
+    pub fn add_def(&mut self, def: Definition) {
+        let uuid = Uuid::new_v4();
+
+        match def.clone() {
+            Definition::Struct(s) => {
+                self.by_uuid.insert(uuid, def);
+
+                match self.by_file.get_mut(&s.location.file_path) {
+                    Some(paths) => paths.push(uuid),
+                    None => {
+                        self.by_file.insert(s.location.file_path, vec![uuid]);
+                    }
+                };
+
+                self.names.push((s.name.clone(), uuid));
+
+                self.structs.insert(s.name, uuid);
+            }
+            Definition::Func(f) => {
+                self.by_uuid.insert(uuid, def);
+
+                match self.by_file.get_mut(&f.location.file_path) {
+                    Some(paths) => paths.push(uuid),
+                    None => {
+                        self.by_file.insert(f.location.file_path, vec![uuid]);
+                    }
+                };
+
+                self.names.push((f.name.clone(), uuid));
+
+                self.funcs.insert(f.name, uuid);
+            }
+            Definition::Enum(e) => {
+                self.by_uuid.insert(uuid, def);
+
+                match self.by_file.get_mut(&e.location.file_path) {
+                    Some(paths) => paths.push(uuid),
+                    None => {
+                        self.by_file.insert(e.location.file_path, vec![uuid]);
+                    }
+                };
+
+                self.names.push((e.name.clone(), uuid));
+
+                self.enums.insert(e.name, uuid);
+            }
+            Definition::Var(v) => {
+                self.by_uuid.insert(uuid, def);
+
+                match self.by_file.get_mut(&v.location.file_path) {
+                    Some(paths) => paths.push(uuid),
+                    None => {
+                        self.by_file.insert(v.location.file_path, vec![uuid]);
+                    }
+                };
+
+                self.names.push((v.name.clone(), uuid));
+
+                self.vars.insert(v.name, uuid);
+            }
+            Definition::Mod(m) => {
+                self.by_uuid.insert(uuid, def);
+
+                match self.by_file.get_mut(&m.location.file_path) {
+                    Some(paths) => paths.push(uuid),
+                    None => {
+                        self.by_file.insert(m.location.file_path, vec![uuid]);
+                    }
+                };
+
+                self.names.push((m.name.clone(), uuid));
+
+                self.structs.insert(m.name, uuid);
+            }
+        }
+    }
+
+    pub fn append(&mut self, other: DefenitionsDB) {
+        self.by_uuid.extend(other.by_uuid);
+        // BUG: this should add to the vectors individually.
+        self.by_file.extend(other.by_file);
+        self.names.extend(other.names);
+        self.structs.extend(other.structs);
+        self.enums.extend(other.enums);
+        self.vars.extend(other.vars);
+        self.mods.extend(other.mods);
+        self.funcs.extend(other.funcs);
     }
 
     /// purges all definitions from file from the database

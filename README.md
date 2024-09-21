@@ -22,5 +22,6 @@ currently working on MVP versions
 
 ## TODO
 
-- make this a single project and use lazy static to start the message bus when necessary.
+- make this a single project
+- use lazy static to start the message bus when necessary (like for tests and stuff)
 - model github and gitlab web-hook data 
