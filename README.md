@@ -23,7 +23,6 @@ currently working on MVP versions
 - [ ] utterance detection
 - [x] webhook-intake
 - [ ] speach to text client
-- [ ] stenographer
 
 ## TODO
 
