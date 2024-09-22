@@ -10,7 +10,8 @@ currently working on MVP versions
 
 - [x] message-bus
 - [ ] chatbot
-- [ ] GUI/TUI
+- [ ] GUI
+- [ ] TUI
 - [x] linter
 <!-- - [ ] LSP -->
 - [x] todo-collector
@@ -20,6 +21,8 @@ currently working on MVP versions
 - [x] text to speech
 - [ ] utterance detection
 - [x] webhook-intake
+- [ ] speach to text client
+- [ ] stenographer (logger that logs to file) (maybe integrate with messagebus)
 
 ## TODO
 
@@ -27,3 +30,5 @@ currently working on MVP versions
 - use lazy static to start the message bus when necessary (like for tests and stuff)
 - model github and gitlab web-hook data
 - handle utterace detection with a button press
+- add event http end points to message-bus
+  - file opens & closes

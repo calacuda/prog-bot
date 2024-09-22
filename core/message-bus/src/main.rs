@@ -1,23 +1,33 @@
 use actix::{spawn, Actor, Addr, Context, Handler, Message, StreamHandler};
 use actix_broker::{BrokerIssue, BrokerSubscribe, SystemBroker};
-use actix_web::{web, App, Error, HttpRequest, HttpResponse, HttpServer};
+use actix_web::{
+    error::ErrorBadRequest, post, web, App, Error, HttpRequest, HttpResponse, HttpServer,
+};
 use actix_web_actors::ws;
 use anyhow::Result;
+// use futures_util::stream::stream::StreamExt;
+// use actix_web::{error, post, web, App, Error, HttpResponse};
+use futures_util::StreamExt;
 use prog_bot_common::start_logging;
 use prog_bot_data_types::{
     get_new_uuid, Configuration, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType,
     SubscribeTo, Uuid,
 };
 use serde::{Deserialize, Serialize};
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
+use std::{
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 use tokio::time::{sleep, Duration};
 use tracing::*;
 
 #[cfg(test)]
 mod test;
+
+const MAX_SIZE: usize = 1_440; // max payload size is 256k
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MessageEvent;
@@ -173,6 +183,80 @@ async fn index(
     resp
 }
 
+#[post("/opened-file")]
+async fn open_file(
+    data: web::Data<Addr<MessageEvent>>,
+    req: HttpRequest,
+    mut payload: web::Payload,
+    stream: web::Payload,
+) -> Result<String, Error> {
+    let mut body = web::BytesMut::new();
+
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+        // limit max size of in-memory payload
+        if (body.len() + chunk.len()) > MAX_SIZE {
+            return Err(ErrorBadRequest("overflow"));
+        }
+        body.extend_from_slice(&chunk);
+    }
+
+    let Ok(raw_body_data) = String::from_utf8(body.to_vec()) else {
+        return Err(ErrorBadRequest("invalid utf8"));
+    };
+    let raw_body_data = raw_body_data.replace("\n", "");
+    let id = get_new_uuid();
+
+    if !raw_body_data.starts_with("/home/") {
+        return Err(ErrorBadRequest("invalid directory"));
+    }
+
+    let tmp_file_path = PathBuf::from(&raw_body_data);
+
+    debug!("opended file path: {:?}", tmp_file_path.as_path());
+
+    let mut file_path = PathBuf::from("/home/");
+    let mut prev_slash: bool = false;
+
+    for dir in tmp_file_path.as_path() {
+        // println!("dir: {dir:?} - {prev_slash}");
+        if dir == "/" && prev_slash {
+            return Err(ErrorBadRequest("file must be in the users home directory"));
+        } else if dir == "/" {
+            prev_slash = true;
+        } else {
+            prev_slash = false;
+        }
+
+        if dir == ".." {
+            file_path.pop();
+        } else {
+            file_path.push(dir)
+        }
+        // println!("prev_slash {prev_slash}");
+    }
+
+    if !file_path.starts_with("/home/") {
+        return Err(ErrorBadRequest("file must be in the users home directory"));
+    }
+
+    data.do_send(MessageInternalWrapper {
+        id,
+        message: ProgBotMessage {
+            msg_type: ProgBotMessageType::FileOpened,
+            data: serde_json::to_value(&file_path).unwrap(),
+            context: ProgBotMessageContext {
+                sender: None,
+                response_to: None,
+            },
+        },
+    });
+
+    info!("oppended file {}", file_path.as_path().to_str().unwrap());
+
+    Ok("Success".into())
+}
+
 pub async fn start(configs: Configuration) -> Result<()> {
     let msg_event_addr = web::Data::new(MessageEvent.start());
 
@@ -182,6 +266,7 @@ pub async fn start(configs: Configuration) -> Result<()> {
         App::new()
             .app_data(msg_event_addr.clone())
             .route(&configs.websocket.route, web::get().to(index))
+            .service(open_file)
     })
     .bind((configs.websocket.host, configs.websocket.port))?
     .run()

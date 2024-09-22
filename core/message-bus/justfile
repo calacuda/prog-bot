@@ -7,3 +7,6 @@ test:
 
 entr:
   /usr/bin/ls src/**/*.rs Cargo.toml | entr cargo check
+
+test-file-open:
+  echo '{"type":"Subscribe","data":["FileOpened"],"context":{"sender":null,"response_to":null}}' | rlwrap websocat ws://127.0.0.1:8080/message-bus

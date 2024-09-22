@@ -69,7 +69,7 @@ List of Nodes:
 
 | **Node** | **Trigger** |
 |----------|-------------|
-| `TODO Collector` | runs on each individual file, on file saves |
+| `TODO Collector` | runs on each individual file, & on file saves |
 | `GUI` | only receives information from the message-bus. can also alter settings/parameters (or outright trigger) other nodes |
 | `utterance detector` | every time the mic volume rises above THEN falls bellow a threshold (controlled by the settings file) |
 | `chat-bot` | a message on the message bus (said message can be triggered by either a wake word, or keyboard shortcut) |

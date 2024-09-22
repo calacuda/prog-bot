@@ -11,7 +11,12 @@ use ratatui::{
     widgets::Paragraph,
     Frame, Terminal,
 };
-use std::io::{stdout, Stdout};
+use std::{
+    io::{stdout, Stdout},
+    ops::Deref,
+    sync::{atomic::AtomicBool, Arc},
+};
+use tokio::sync::Mutex;
 
 mod app_state;
 
@@ -36,9 +41,12 @@ async fn main() -> Result<()> {
 }
 
 async fn main_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
-    let mut state = AppState::new().await?;
+    let running = Arc::new(Mutex::new(true));
+    let r = running.clone();
 
-    loop {
+    let mut state = AppState::new(r).await?;
+
+    while *running.lock().await {
         terminal.draw(|frame| ui(frame, &mut state))?;
 
         if event::poll(std::time::Duration::from_millis(16))? {

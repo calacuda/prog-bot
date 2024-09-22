@@ -195,6 +195,26 @@ impl DefenitionsDB {
     /// purges all definitions from file from the database
     pub fn remove(&mut self, file: PathBuf) -> Result<()> {
         // TODO: write this
+        let Some(uuid_to_rm) = self.by_file.get(&file).clone() else {
+            return Ok(());
+        };
+
+        let names_to_rm: Vec<Name> = self
+            .names
+            .iter()
+            .filter_map(|(name, id)| {
+                if uuid_to_rm.contains(id) {
+                    Some(name.to_owned())
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // TODO: rm from structs, enums, funcs, vars, mods
+        // TODO: rm from names
+        // TODO: rm from by_file, and by_uuid
+
         Ok(())
     }
 

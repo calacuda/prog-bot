@@ -7,15 +7,15 @@ edition = "2021"
 actix = "0.13.5"
 actix-broker = "0.4.3"
 actix-rt = "2.10.0"
-actix-web = { version = "4.8.0", default-features = false, features = ["macros"] }
-actix-web-actors = "4.3.0"
-anyhow = { version = "1.0.86", features = ["backtrace"] }
-ctrlc = "3.4.4"
-env_logger = "0.11.3"
+actix-web = { version = "4.9.0", default-features = false, features = ["macros"] }
+actix-web-actors = "4.3.1"
+anyhow = { version = "1.0.89", features = ["backtrace"] }
+ctrlc = "3.4.5"
+env_logger = "0.11.5"
 futures-util = "0.3.30"
 prog-bot-common = { version = "0.1.0", path = "../../common-lib" }
 prog-bot-data-types = { version = "0.1.0", path = "../../data-types" }
-serde = { version = "1.0.204", features = ["derive"] }
-serde_json = "1.0.120"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
 tokio-tungstenite = { version = "0.23.1", features = ["native-tls"] }
 tracing = { version = "0.1.40", features = ["async-await", "log", "log-always"] }

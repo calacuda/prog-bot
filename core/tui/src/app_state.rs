@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use futures_util::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
@@ -67,7 +67,7 @@ pub enum Tab {
 }
 
 impl AppState {
-    pub async fn new() -> Result<Self> {
+    pub async fn new(should_go_on: Arc<Mutex<bool>>) -> Result<Self> {
         // let (to_mb, to_mb_rx) = unbounded_channel();
         let (from_mb_tx, from_mb) = unbounded_channel();
 
@@ -80,20 +80,33 @@ impl AppState {
                                                        // closed file
 
         // will emitt ProgBotMessageType::TodoFound and TodoEdited
-        let (uuid, (write, read)) = connect_to_messagebus(sub_to).await?;
+        let mb_res = connect_to_messagebus(sub_to).await;
+        let Ok((uuid, (write, read))) = mb_res else {
+            bail!("could not connect to message bus. is it running?")
+        };
 
         let def_db = Arc::new(Mutex::new(DefenitionsDB::default()));
         let defs = def_db.clone();
 
+        let sgo = should_go_on.clone();
+
         // write recv and send threads.
-        let send_thread = spawn(async {
+        let send_thread = spawn(async move {
             if let Err(e) = talk_with_message_bus(from_mb_tx, read).await {
-                eprintln!("connection with messagebus encountered an error: {e}");
+                let msg = format!("connection with messagebus encountered an error: {e}");
+                eprintln!("{msg}");
+                let mut sgo = sgo.lock().await;
+                *sgo = false;
             }
         });
+
+        let sgo = should_go_on.clone();
+
         let recv_thread = spawn(async move {
             if let Err(e) = process_messages(from_mb, write, defs.clone(), uuid).await {
-                eprintln!("processing message failed with erro: {e}")
+                eprintln!("processing message failed with erro: {e}");
+                let mut sgo = sgo.lock().await;
+                *sgo = false;
             }
         });
 
@@ -190,7 +203,10 @@ pub async fn process_messages(
                     error!("failed to parse lsp response");
                 }
             }
-            ProgBotMessageType::FileClosed => {}
+            ProgBotMessageType::FileClosed => {
+                let file = serde_json::from_value::<LspResponse>(raw_message.data);
+                // TODO: purse all todos related to 'file'
+            }
             ProgBotMessageType::FoundTodo => {}
             _ => {}
         }
