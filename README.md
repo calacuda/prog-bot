@@ -9,6 +9,7 @@ for an over view of what this project is and what it seeks to do, see: [project-
 currently working on MVP versions
 
 - [x] message-bus
+ - add file logging
 - [ ] chatbot
 - [ ] GUI
 - [ ] TUI
@@ -22,7 +23,7 @@ currently working on MVP versions
 - [ ] utterance detection
 - [x] webhook-intake
 - [ ] speach to text client
-- [ ] stenographer (logger that logs to file) (maybe integrate with messagebus)
+- [ ] stenographer
 
 ## TODO
 
