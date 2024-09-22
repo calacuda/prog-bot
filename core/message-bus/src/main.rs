@@ -183,7 +183,7 @@ async fn index(
     resp
 }
 
-#[post("/opened-file")]
+#[post("/open-file")]
 async fn open_file(
     data: web::Data<Addr<MessageEvent>>,
     req: HttpRequest,
@@ -212,8 +212,6 @@ async fn open_file(
     }
 
     let tmp_file_path = PathBuf::from(&raw_body_data);
-
-    debug!("opended file path: {:?}", tmp_file_path.as_path());
 
     let mut file_path = PathBuf::from("/home/");
     let mut prev_slash: bool = false;
@@ -252,7 +250,151 @@ async fn open_file(
         },
     });
 
-    info!("oppended file {}", file_path.as_path().to_str().unwrap());
+    info!("opened file {}", file_path.as_path().to_str().unwrap());
+
+    Ok("Success".into())
+}
+
+#[post("/close-file")]
+async fn close_file(
+    data: web::Data<Addr<MessageEvent>>,
+    req: HttpRequest,
+    mut payload: web::Payload,
+    stream: web::Payload,
+) -> Result<String, Error> {
+    let mut body = web::BytesMut::new();
+
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+        // limit max size of in-memory payload
+        if (body.len() + chunk.len()) > MAX_SIZE {
+            return Err(ErrorBadRequest("overflow"));
+        }
+        body.extend_from_slice(&chunk);
+    }
+
+    let Ok(raw_body_data) = String::from_utf8(body.to_vec()) else {
+        return Err(ErrorBadRequest("invalid utf8"));
+    };
+    let raw_body_data = raw_body_data.replace("\n", "");
+
+    if !raw_body_data.starts_with("/home/") {
+        return Err(ErrorBadRequest("invalid directory"));
+    }
+
+    let tmp_file_path = PathBuf::from(&raw_body_data);
+
+    let mut file_path = PathBuf::from("/home/");
+    let mut prev_slash: bool = false;
+
+    for dir in tmp_file_path.as_path() {
+        // println!("dir: {dir:?} - {prev_slash}");
+        if dir == "/" && prev_slash {
+            return Err(ErrorBadRequest("file must be in the users home directory"));
+        } else if dir == "/" {
+            prev_slash = true;
+        } else {
+            prev_slash = false;
+        }
+
+        if dir == ".." {
+            file_path.pop();
+        } else {
+            file_path.push(dir)
+        }
+        // println!("prev_slash {prev_slash}");
+    }
+
+    if !file_path.starts_with("/home/") {
+        return Err(ErrorBadRequest("file must be in the users home directory"));
+    }
+
+    let id = get_new_uuid();
+    data.do_send(MessageInternalWrapper {
+        id,
+        message: ProgBotMessage {
+            msg_type: ProgBotMessageType::FileClosed,
+            data: serde_json::to_value(&file_path).unwrap(),
+            context: ProgBotMessageContext {
+                sender: None,
+                response_to: None,
+            },
+        },
+    });
+
+    info!("closed file {}", file_path.as_path().to_str().unwrap());
+
+    Ok("Success".into())
+}
+
+#[post("/save-file")]
+async fn save_file(
+    data: web::Data<Addr<MessageEvent>>,
+    req: HttpRequest,
+    mut payload: web::Payload,
+    stream: web::Payload,
+) -> Result<String, Error> {
+    let mut body = web::BytesMut::new();
+
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+        // limit max size of in-memory payload
+        if (body.len() + chunk.len()) > MAX_SIZE {
+            return Err(ErrorBadRequest("overflow"));
+        }
+        body.extend_from_slice(&chunk);
+    }
+
+    let Ok(raw_body_data) = String::from_utf8(body.to_vec()) else {
+        return Err(ErrorBadRequest("invalid utf8"));
+    };
+    let raw_body_data = raw_body_data.replace("\n", "");
+
+    if !raw_body_data.starts_with("/home/") {
+        return Err(ErrorBadRequest("invalid directory"));
+    }
+
+    let tmp_file_path = PathBuf::from(&raw_body_data);
+
+    let mut file_path = PathBuf::from("/home/");
+    let mut prev_slash: bool = false;
+
+    for dir in tmp_file_path.as_path() {
+        // println!("dir: {dir:?} - {prev_slash}");
+        if dir == "/" && prev_slash {
+            return Err(ErrorBadRequest("file must be in the users home directory"));
+        } else if dir == "/" {
+            prev_slash = true;
+        } else {
+            prev_slash = false;
+        }
+
+        if dir == ".." {
+            file_path.pop();
+        } else {
+            file_path.push(dir)
+        }
+        // println!("prev_slash {prev_slash}");
+    }
+
+    if !file_path.starts_with("/home/") {
+        return Err(ErrorBadRequest("file must be in the users home directory"));
+    }
+
+    let id = get_new_uuid();
+    data.do_send(MessageInternalWrapper {
+        id,
+        message: ProgBotMessage {
+            msg_type: ProgBotMessageType::FileSaved,
+            data: serde_json::to_value(&file_path).unwrap(),
+            context: ProgBotMessageContext {
+                sender: None,
+                response_to: None,
+            },
+        },
+    });
+
+    info!("saved file {}", file_path.as_path().to_str().unwrap());
 
     Ok("Success".into())
 }
@@ -267,6 +409,7 @@ pub async fn start(configs: Configuration) -> Result<()> {
             .app_data(msg_event_addr.clone())
             .route(&configs.websocket.route, web::get().to(index))
             .service(open_file)
+            .service(close_file)
     })
     .bind((configs.websocket.host, configs.websocket.port))?
     .run()
