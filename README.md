@@ -26,6 +26,7 @@ currently working on MVP versions
 - [ ] utterance detection
   - [x] triggerable from messagebus
   - [ ] triggerable with voice
+  - consider combining with speach to text client
 - [x] webhook-intake
 - [x] speach to text client
   - needs tests
