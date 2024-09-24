@@ -64,7 +64,7 @@ async fn main() -> Result<()> {
 
     let (uuid, (write, read)) = connect_to_messagebus(sub_to).await?;
 
-    info!("TTS engine connected to message-bus. assigned uuid: {uuid}");
+    info!("LSP engine connected to message-bus. assigned uuid: {uuid}");
 
     let (from_mb_tx, from_mb_rx) = unbounded_channel();
     // let (to_mb_tx, to_mb_rx) = unbounded_channel::<ProgBotMessage>();
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
     let r = running.clone();
 
     ctrlc::set_handler(move || {
-        info!("terminating clippy node");
+        info!("terminating LSP node");
         r.store(false, Ordering::SeqCst);
     })
     .expect("Error setting Ctrl-C handler");
