@@ -24,6 +24,8 @@ currently working on MVP versions
   - add a beep/jingle to play for situations where words would be over kill but user feed back is still needed.
     - decide on a beep/jingle
 - [ ] utterance detection
+  - [x] triggerable from messagebus
+  - [ ] triggerable with voice
 - [x] webhook-intake
 - [x] speach to text client
   - needs tests
