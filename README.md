@@ -20,8 +20,8 @@ currently working on MVP versions
  - [x] fix struct detection
  - [ ] add block comments
 - [x] text to speech
-  - needs tests
-  - add a beep/jingle to play for situations where words would be over kill but user feed back is still needed.
+  - [ ] needs tests
+  - [x] add a beep/jingle to play for situations where words would be over kill but user feed back is still needed.
     - decide on a beep/jingle
 - [ ] utterance detection
   - [x] triggerable from messagebus
