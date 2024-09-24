@@ -1,3 +1,6 @@
+default:
+  just --list
+
 test:
   tmux new -ds "messagebus-test"
   tmux send-keys -t messagebus-test "cargo run" Enter
@@ -13,4 +16,12 @@ test-file-open-server:
 
 test-file-open-client:
   http POST http://localhost:8080/open-file <<< "/home/Code/rust"
+
+test-utterance-server:
+  echo '{"type":"Subscribe","data":["UserSpeakStart","UserSpeakStop"],"context":{"sender":null,"response_to":null}}' | rlwrap websocat ws://127.0.0.1:8080/message-bus
+
+test-utterance-client:
+  http POST http://localhost:8080/utterance/start
+  sleep 0.5
+  http POST http://localhost:8080/utterance/stop
 

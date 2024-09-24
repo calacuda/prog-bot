@@ -1,9 +1,4 @@
-use crate::{
-    ast::Definitions,
-    lsp::{LspFoundDef, TermType},
-    todo::{Definition, FileLocation, StructDef},
-    Uuid,
-};
+use crate::{ast::Definitions, lsp::TermType, todo::Definition, Uuid};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use rustc_hash::FxHashMap;
@@ -195,7 +190,7 @@ impl DefenitionsDB {
     /// purges all definitions from file from the database
     pub fn remove(&mut self, file: PathBuf) -> Result<()> {
         // TODO: write this
-        let Some(uuid_to_rm) = self.by_file.get(&file).clone() else {
+        let Some(uuid_to_rm) = self.by_file.remove(&file).clone() else {
             return Ok(());
         };
 
@@ -211,9 +206,25 @@ impl DefenitionsDB {
             })
             .collect();
 
-        // TODO: rm from structs, enums, funcs, vars, mods
-        // TODO: rm from names
-        // TODO: rm from by_file, and by_uuid
+        // rm names from structs, enums, funcs, vars, mods
+        let rm_f = |hm: &mut FxHashMap<Name, Uuid>| {
+            names_to_rm.iter().for_each(|name| {
+                hm.remove(name);
+            })
+        };
+        rm_f(&mut self.structs);
+        rm_f(&mut self.enums);
+        rm_f(&mut self.funcs);
+        rm_f(&mut self.vars);
+        rm_f(&mut self.mods);
+
+        // rm from names
+        self.names.retain(|(name, _id)| !names_to_rm.contains(name));
+
+        // rm from by_uuid
+        uuid_to_rm.iter().for_each(|id| {
+            self.by_uuid.remove(id);
+        });
 
         Ok(())
     }
@@ -280,7 +291,6 @@ impl DefenitionsDB {
                 }
             }
             TermType::Module => {
-                // TODO: search through only modules.
                 if let Some((_score, name)) = self
                     .mods
                     .keys()

@@ -1,7 +1,7 @@
 use actix::{spawn, Actor, Addr, Context, Handler, Message, StreamHandler};
 use actix_broker::{BrokerIssue, BrokerSubscribe, SystemBroker};
 use actix_web::{
-    error::ErrorBadRequest, post, web, App, Error, HttpRequest, HttpResponse, HttpServer,
+    error::ErrorBadRequest, get, post, web, App, Error, HttpRequest, HttpResponse, HttpServer,
 };
 use actix_web_actors::ws;
 use anyhow::Result;
@@ -15,6 +15,7 @@ use prog_bot_data_types::{
 };
 use serde::{Deserialize, Serialize};
 use std::{
+    ops::Deref,
     path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -164,6 +165,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Deserialize, Serialize)]
+enum UtterenaceState {
+    #[serde(alias = "start")]
+    Start,
+    #[serde(alias = "stop")]
+    Stop,
+}
+
 async fn index(
     data: web::Data<Addr<MessageEvent>>,
     req: HttpRequest,
@@ -186,9 +195,9 @@ async fn index(
 #[post("/open-file")]
 async fn open_file(
     data: web::Data<Addr<MessageEvent>>,
-    req: HttpRequest,
+    // req: HttpRequest,
     mut payload: web::Payload,
-    stream: web::Payload,
+    // stream: web::Payload,
 ) -> Result<String, Error> {
     let mut body = web::BytesMut::new();
 
@@ -258,9 +267,9 @@ async fn open_file(
 #[post("/close-file")]
 async fn close_file(
     data: web::Data<Addr<MessageEvent>>,
-    req: HttpRequest,
+    // req: HttpRequest,
     mut payload: web::Payload,
-    stream: web::Payload,
+    // stream: web::Payload,
 ) -> Result<String, Error> {
     let mut body = web::BytesMut::new();
 
@@ -330,9 +339,9 @@ async fn close_file(
 #[post("/save-file")]
 async fn save_file(
     data: web::Data<Addr<MessageEvent>>,
-    req: HttpRequest,
+    // req: HttpRequest,
     mut payload: web::Payload,
-    stream: web::Payload,
+    // stream: web::Payload,
 ) -> Result<String, Error> {
     let mut body = web::BytesMut::new();
 
@@ -399,6 +408,33 @@ async fn save_file(
     Ok("Success".into())
 }
 
+#[post("/utterance/{state}")]
+async fn utterance(
+    data: web::Data<Addr<MessageEvent>>,
+    path: web::Path<UtterenaceState>,
+) -> Result<String, Error> {
+    let id = get_new_uuid();
+
+    let msg_type = match path.deref() {
+        UtterenaceState::Start => ProgBotMessageType::UserSpeakStart,
+        UtterenaceState::Stop => ProgBotMessageType::UserSpeakStop,
+    };
+
+    data.do_send(MessageInternalWrapper {
+        id,
+        message: ProgBotMessage {
+            msg_type,
+            data: serde_json::Value::Null,
+            context: ProgBotMessageContext {
+                sender: None,
+                response_to: None,
+            },
+        },
+    });
+
+    Ok("Success".into())
+}
+
 pub async fn start(configs: Configuration) -> Result<()> {
     let msg_event_addr = web::Data::new(MessageEvent.start());
 
@@ -410,6 +446,8 @@ pub async fn start(configs: Configuration) -> Result<()> {
             .route(&configs.websocket.route, web::get().to(index))
             .service(open_file)
             .service(close_file)
+            .service(save_file)
+            .service(utterance)
     })
     .bind((configs.websocket.host, configs.websocket.port))?
     .run()
