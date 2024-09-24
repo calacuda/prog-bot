@@ -20,9 +20,11 @@ currently working on MVP versions
  - [x] fix struct detection
  - [ ] add block comments
 - [x] text to speech
+  - needs tests
 - [ ] utterance detection
 - [x] webhook-intake
-- [ ] speach to text client
+- [x] speach to text client
+  - needs tests
 
 ## TODO
 

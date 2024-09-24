@@ -1,0 +1,8 @@
+test-file-listen:
+  (echo '{"type":"Subscribe","data":["UserUtterance"],"context":{"sender":null,"response_to":null}}'; echo '{"type":"UserSpeakStart","data":null,"context":{"sender":null,"response_to":null}}' & ( sleep 5; echo '{"type":"UserSpeakStop","data":null,"context":{"sender":null,"response_to":null}}')) | rlwrap websocat ws://127.0.0.1:8080/message-bus
+
+download-medium:
+  curl https://raw.githubusercontent.com/ggerganov/whisper.cpp/refs/heads/master/models/download-ggml-model.sh | sh -s -- medium.en
+
+download-base:
+  curl https://raw.githubusercontent.com/ggerganov/whisper.cpp/refs/heads/master/models/download-ggml-model.sh | sh -s -- base.en

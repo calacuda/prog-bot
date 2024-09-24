@@ -67,7 +67,7 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
-    info!("clippy node started");
+    info!("TTS node started");
 
     while running.load(Ordering::SeqCst) {
         // debug!("waiting...");
