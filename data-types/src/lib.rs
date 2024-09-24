@@ -37,6 +37,7 @@ pub fn empty_map() -> Value {
 pub struct Configuration {
     pub websocket: WebsocketConf,
     pub webhook: WebHookConf,
+    pub audio: AudioConf,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -53,6 +54,12 @@ pub struct WebHookConf {
     pub secret: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AudioConf {
+    pub default_beep: String,
+    pub mycroft_voice: Option<String>,
+}
+
 impl Configuration {
     pub fn get() -> Self {
         Self {
@@ -65,6 +72,10 @@ impl Configuration {
                 host: "0.0.0.0".into(),
                 port: 8888,
                 secret: "foobar".into(),
+            },
+            audio: AudioConf {
+                default_beep: "beep".into(),
+                mycroft_voice: None,
             },
         }
     }
@@ -131,6 +142,11 @@ pub enum ProgBotMessageType {
     Ack,
     /// instructs the message bus to log something contains a log level and message
     Log,
+    /// used when user feedback is needed but words would take too long or be overkill (ex: when
+    /// the speach to text system needs to let teh user know that its ready to listen.) message
+    /// should contain an optional argument which is teh anme of the beep/jingle to be played. if
+    /// not provided a config default will be used
+    Beep,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
