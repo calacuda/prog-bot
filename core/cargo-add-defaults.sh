@@ -8,5 +8,5 @@ cargo add --path ../../data-types/
 cargo add serde_json
 cargo add tokio -F full
 cargo add tokio-tungstenite
-cargo add tracing -F async-await -F log -F log-always
+cargo add tracing -F async-await
 # cargo add serde -F derive
