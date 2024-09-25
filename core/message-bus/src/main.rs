@@ -1,7 +1,7 @@
 use actix::{spawn, Actor, Addr, Context, Handler, Message, StreamHandler};
 use actix_broker::{BrokerIssue, BrokerSubscribe, SystemBroker};
 use actix_web::{
-    error::ErrorBadRequest, get, post, web, App, Error, HttpRequest, HttpResponse, HttpServer,
+    error::ErrorBadRequest, post, web, App, Error, HttpRequest, HttpResponse, HttpServer,
 };
 use actix_web_actors::ws;
 use anyhow::Result;
@@ -54,11 +54,11 @@ impl Handler<MessageInternalWrapper> for MessageEvent {
 }
 
 fn on_ready() {
-    debug!("Message bus service started!")
+    info!("Message bus service started!")
 }
 
 fn on_stopping() {
-    debug!("Message bus is shutting down...");
+    info!("Message bus is shutting down...");
 }
 
 /// Define HTTP actor
@@ -81,20 +81,20 @@ impl Handler<MessageInternalWrapper> for MessageBus {
     type Result = ();
 
     fn handle(&mut self, item: MessageInternalWrapper, ctx: &mut Self::Context) {
-        if item.id != self.id && self.subscribed_to.contains(&item.message.msg_type) {
-            debug!(
-                "connection {} recv'ed a message {:?}",
-                self.id, item.message
-            );
-            let mut mesg = item.message;
+        let mut mesg = item.message;
 
-            mesg.context.sender = Some(item.id);
+        mesg.context.sender = Some(item.id);
+        let msg_type = mesg.msg_type;
 
-            if let Ok(json) = serde_json::to_string(&mesg) {
+        if let Ok(json) = serde_json::to_string(&mesg) {
+            if item.id != self.id && self.subscribed_to.contains(&msg_type) {
+                trace!("connection {} recv'ed a message {:?}", self.id, mesg);
                 ctx.text(json);
-            } else {
-                warn!("could not serialize message to json string.");
+            } else if item.id == self.id {
+                info!("node {}, sent the message: \"{}\"", self.id, json);
             }
+        } else {
+            warn!("could not serialize message to json string, recvieved invalid json string.");
         }
     }
 }
@@ -123,6 +123,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
                             };
 
                             if let Ok(res) = serde_json::to_string(&res_mesg) {
+                                info!("node with ID \"{}\" is now connected and synchronized with the message-bus.", self.id);
                                 ctx.text(res);
                             } else {
                                 error!("unknown error while serializing response to {}", self.id);
@@ -131,17 +132,32 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
                         ProgBotMessageType::Subscribe => {
                             if let Ok(sub_to) = serde_json::from_value::<SubscribeTo>(message.data)
                             {
+                                info!(
+                                    "node with ID \"{}\" attempting to subscribed to message types: {:?}", self.id, sub_to.clone().into_iter().collect::<Vec<ProgBotMessageType>>()
+                                );
                                 self.subscribed_to.extend(sub_to);
+                                info!(
+                                    "node with ID \"{}\" is now subscribed to messages of type: {:?}",
+                                    self.id, self.subscribed_to.clone().into_iter().collect::<Vec<ProgBotMessageType>>()
+                                );
                             } else {
                                 error!("malformed Json, can not subscribe to.");
                             }
                         }
                         ProgBotMessageType::Unsubscribe => {
-                            if let Ok(sub_to) = serde_json::from_value::<SubscribeTo>(message.data)
+                            if let Ok(unsub_to) =
+                                serde_json::from_value::<SubscribeTo>(message.data)
                             {
-                                self.subscribed_to.retain(|elm| !sub_to.contains(elm));
+                                info!(
+                                    "node with ID \"{}\" attempting to unsubscribed to message types: {:?}", self.id, unsub_to.clone().into_iter().collect::<Vec<ProgBotMessageType>>()
+                                );
+                                self.subscribed_to.retain(|elm| !unsub_to.contains(elm));
+                                info!(
+                                    "node with ID \"{}\" is now subscribed to messages of type: {:?}",
+                                    self.id, self.subscribed_to.clone().into_iter().collect::<Vec<ProgBotMessageType>>()
+                                );
                             } else {
-                                error!("malformed Json, can not subscribe to.");
+                                error!("malformed Json, can not unsubscribe to.");
                             }
                         }
                         ProgBotMessageType::Log => {
@@ -259,7 +275,7 @@ async fn open_file(
         },
     });
 
-    info!("opened file {}", file_path.as_path().to_str().unwrap());
+    debug!("opened file {}", file_path.as_path().to_str().unwrap());
 
     Ok("Success".into())
 }
@@ -331,7 +347,7 @@ async fn close_file(
         },
     });
 
-    info!("closed file {}", file_path.as_path().to_str().unwrap());
+    debug!("closed file {}", file_path.as_path().to_str().unwrap());
 
     Ok("Success".into())
 }
@@ -403,7 +419,7 @@ async fn save_file(
         },
     });
 
-    info!("saved file {}", file_path.as_path().to_str().unwrap());
+    debug!("saved file {}", file_path.as_path().to_str().unwrap());
 
     Ok("Success".into())
 }
@@ -419,6 +435,8 @@ async fn utterance(
         UtterenaceState::Start => ProgBotMessageType::UserSpeakStart,
         UtterenaceState::Stop => ProgBotMessageType::UserSpeakStop,
     };
+
+    debug!("utterenace {:?}'ed", path.deref());
 
     data.do_send(MessageInternalWrapper {
         id,
@@ -438,9 +456,8 @@ async fn utterance(
 pub async fn start(configs: Configuration) -> Result<()> {
     let msg_event_addr = web::Data::new(MessageEvent.start());
 
-    // TODO: add end points for file save and load
-
     HttpServer::new(move || {
+        // println!("HttpServer new created");
         App::new()
             .app_data(msg_event_addr.clone())
             .route(&configs.websocket.route, web::get().to(index))
@@ -449,6 +466,8 @@ pub async fn start(configs: Configuration) -> Result<()> {
             .service(save_file)
             .service(utterance)
     })
+    .workers(2)
+    // can use bind_uds to bind to a unix socket
     .bind((configs.websocket.host, configs.websocket.port))?
     .run()
     .await?;
@@ -457,8 +476,8 @@ pub async fn start(configs: Configuration) -> Result<()> {
 }
 
 #[actix_web::main]
-async fn main() {
-    let _ = start_logging();
+async fn main() -> anyhow::Result<()> {
+    start_logging()?;
 
     debug!("Loading message bus configs");
 
@@ -488,4 +507,6 @@ async fn main() {
         // debug!("waiting...");
         sleep(Duration::from_secs(1)).await;
     }
+
+    Ok(())
 }
