@@ -27,6 +27,7 @@ currently working on MVP versions
   - [x] triggerable from messagebus
   - [ ] triggerable with voice
   - consider combining with speach to text client
+  - consider making this whole propject tie into neon ai 
 - [x] webhook-intake
 - [x] speach to text client
   - needs tests
