@@ -10,8 +10,8 @@ use anyhow::Result;
 use futures_util::StreamExt;
 use prog_bot_common::start_logging;
 use prog_bot_data_types::{
-    get_new_uuid, Configuration, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType,
-    SubscribeTo, Uuid,
+    get_new_uuid, Configuration, LogLevel, ProgBotMessage, ProgBotMessageContext,
+    ProgBotMessageType, SubscribeTo, Uuid,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -162,6 +162,17 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
                         }
                         ProgBotMessageType::Log => {
                             // TODO: log the sent message.
+                            if let Ok(log_message) =
+                                serde_json::from_value::<LogLevel>(message.data)
+                            {
+                                match log_message {
+                                    LogLevel::Trace(msg) => trace!("{msg}"),
+                                    LogLevel::Info(msg) => info!("{msg}"),
+                                    LogLevel::Debug(msg) => debug!("{msg}"),
+                                    LogLevel::Warn(msg) => warn!("{msg}"),
+                                    LogLevel::Error(msg) => error!("{msg}"),
+                                }
+                            }
                         }
                         _ => self.event.do_send(MessageInternalWrapper {
                             id: self.id,

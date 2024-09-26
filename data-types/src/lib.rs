@@ -149,13 +149,13 @@ pub enum ProgBotMessageType {
     Beep,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Copy)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum LogLevel {
-    Trace,
-    Debug,
-    Info,
-    Warn,
-    Error,
+    Trace(String),
+    Debug(String),
+    Info(String),
+    Warn(String),
+    Error(String),
 }
 
 pub fn get_new_uuid() -> Uuid {
