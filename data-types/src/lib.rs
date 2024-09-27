@@ -36,6 +36,7 @@ pub fn empty_map() -> Value {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Configuration {
     pub websocket: WebsocketConf,
+    pub uds: String,
     pub webhook: WebHookConf,
     pub audio: AudioConf,
 }
@@ -68,6 +69,7 @@ impl Configuration {
                 port: 8080,
                 route: "message-bus".into(),
             },
+            uds: "/tmp/prog-bot.sock".into(),
             webhook: WebHookConf {
                 host: "0.0.0.0".into(),
                 port: 8888,

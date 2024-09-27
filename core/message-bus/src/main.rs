@@ -161,7 +161,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MessageBus {
                             }
                         }
                         ProgBotMessageType::Log => {
-                            // TODO: log the sent message.
+                            // log the incoming message.
                             if let Ok(log_message) =
                                 serde_json::from_value::<LogLevel>(message.data)
                             {
@@ -480,6 +480,7 @@ pub async fn start(configs: Configuration) -> Result<()> {
     .workers(2)
     // can use bind_uds to bind to a unix socket
     .bind((configs.websocket.host, configs.websocket.port))?
+    .bind_uds(configs.uds)?
     .run()
     .await?;
 
