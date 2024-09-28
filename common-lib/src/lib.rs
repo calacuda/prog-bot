@@ -1,19 +1,23 @@
-use std::fmt::Debug;
-
 use anyhow::{bail, Result};
 use futures_util::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
 };
-use instrument::WithSubscriber;
 use prog_bot_data_types::{
     Configuration, ProgBotMessage, ProgBotMessageContext, ProgBotMessageType, SubscribeTo, Uuid,
 };
 pub use tokio;
-use tokio::io::{AsyncRead, AsyncWrite};
-use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream};
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    net::{UnixSocket, UnixStream},
+};
+use tokio_tungstenite::{
+    client_async, connect_async,
+    tungstenite::{handshake::client::Request, Message},
+    WebSocketStream,
+};
 use tracing::*;
-use tracing_subscriber::{filter::FilterFn, layer::SubscriberExt, prelude::*, Registry};
+use tracing_subscriber::{layer::SubscriberExt, prelude::*};
 
 // TODO: make logging macros that take a write connections to the message bus and a message to be
 // logged.
@@ -42,12 +46,20 @@ pub async fn connect_to_messagebus(
         SplitStream<WebSocketStream<impl AsyncRead + AsyncWrite + Unpin>>,
     ),
 )> {
-    let url = get_message_bus_url();
+    // let url = get_message_bus_url();
+    let conf = Configuration::get();
 
-    info!("connecting to message bus at - {url}");
-    let (ws_stream, _) = connect_async(url).await?;
+    let addr = conf.uds;
+
+    info!("attempting to connect to message bus at - {addr}");
+    let stream = UnixStream::connect(addr).await?;
+    let uri = format!(
+        "ws://{}:{}/{}",
+        conf.websocket.host, conf.websocket.port, conf.websocket.route
+    );
+
+    let (ws_stream, _) = client_async(uri, stream).await?;
     info!("connected to message bus successfully");
-
     let (mut write, mut read) = ws_stream.split();
 
     info!("attempting to register node");
@@ -63,7 +75,7 @@ pub async fn connect_to_messagebus(
         .await?;
     info!("sent reqestration request.");
 
-    let uuid: Result<Uuid> = if let Some(message) = read.next().await {
+    let uuid = if let Some(message) = read.next().await {
         match message {
             Ok(msg) => match msg {
                 Message::Text(raw_msg) => {
@@ -72,7 +84,7 @@ pub async fn connect_to_messagebus(
                     if msg.msg_type == ProgBotMessageType::Ack {
                         let uuid: Uuid = serde_json::from_value(msg.data)?;
 
-                        Ok(uuid)
+                        uuid
                     } else {
                         bail!(
                             "got wrong response type from server. got {:?}, expected {:?}",
@@ -93,7 +105,7 @@ pub async fn connect_to_messagebus(
     };
     info!("got reqestration response");
 
-    Ok((uuid?, (write, read)))
+    Ok((uuid, (write, read)))
 }
 
 pub fn start_logging() -> Result<()> {
