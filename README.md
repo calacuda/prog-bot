@@ -11,6 +11,7 @@ currently working on MVP versions
 - [x] message-bus
  - add file logging
 - [ ] chatbot
+  - trigger with a keyboard shortcut
 - [ ] GUI
 - [ ] TUI
 - [x] linter
