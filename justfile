@@ -15,7 +15,6 @@ new-window NAME CMD:
   tmux send-keys -t prog-bot:"{{NAME}}" "{{CMD}}" ENTER
 
 tmux:
-  # new-window() { tmux new-w -t prog-bot -n $1; tmux send-keys -t prog-bot:$1 $2 ENTER }
   tmux new -ds prog-bot -n "README"
   tmux send-keys -t prog-bot:README 'nv ./README.md "+set wrap"' ENTER
   @just new-window "Run MB" "cd ./core/message-bus/ && cargo run"
@@ -23,4 +22,5 @@ tmux:
   @just new-window "Run" "cd ./core"
   @just new-window "Run 2" "cd ./core"  
   @just new-window "git" "git status"
+  tmux a -t prog-bot
 
