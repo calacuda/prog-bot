@@ -23,14 +23,14 @@ currently working on MVP versions
 - [x] text to speech
   - [ ] needs tests
   - [x] add a beep/jingle to play for situations where words would be over kill but user feed back is still needed.
-    - decide on a default beep/jingle
+    - [ ] decide on a default beep/jingle
 - [ ] utterance detection
   - [x] triggerable from messagebus
   - [ ] triggerable with voice
-  - consider combining with speach to text client
-  - consider making this whole propject tie into neon ai 
+  - consider combining with speech to text client
+  - consider making this whole project tie into neon ai 
 - [x] webhook-intake
-- [x] speach to text client
+- [x] speech to text client
   - needs tests
 
 ## TODO
