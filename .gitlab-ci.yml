@@ -17,7 +17,7 @@ build-message-bus:
         - core/message-bus/target/debug/prog-bot-message-bus.d
   script:
     - cd ./core/message-bus/
-    - cargo build
+    - cargo +nightly build
   only:
     - main
     - dev
@@ -31,10 +31,10 @@ message-bus:
     - apt-get update -y && apt-get install -y tmux
   script:
     - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
+    - cargo +nightly build
+    - tmux new -ds "messagebus-test" "cargo +nightly run"
     - sleep 5
-    - cargo test
+    - cargo +nightly test
     - tmux kill-session -t "messagebus-test"
   only:
     - main
@@ -56,11 +56,11 @@ linter:
         - core/linter/target/debug/deps
   script:
     - cd ./core/message-bus/
-    - cargo build
-    - tmux new -ds "messagebus-test" "cargo run"
+    - cargo +nightly build
+    - tmux new -ds "messagebus-test" "cargo +nightly run"
     - sleep 10
     - cd ../linter
-    - cargo test
+    - cargo +nightly test
     - tmux kill-session -t "messagebus-test"
   only:
     - main
@@ -86,7 +86,7 @@ todo-collector:
     # - sleep 5
     # - cd ../todo-collector/
     - cd ./core/todo-collector/
-    - cargo test
+    - cargo +nightly test
     # - tmux kill-session -t "messagebus-test"
   only:
     - main
@@ -112,7 +112,7 @@ web-hook-intake:
     # - sleep 5
     # - cd ../web-hook-intake/
     - cd ./core/web-hook-intake/
-    - cargo test
+    - cargo +nightly test
     # - tmux kill-session -t "messagebus-test"
   only:
     - main
