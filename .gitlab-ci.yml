@@ -24,7 +24,8 @@ build-message-bus:
 
 message-bus:
   stage: test
-  image: rust:1.79-bookworm
+  # image: rust:1.79-bookworm
+  image: rust:1.95-bullseye
   before_script:
     - apt-get update -y && apt-get install -y tmux
   script:
@@ -40,7 +41,8 @@ message-bus:
 
 linter:
   stage: test
-  image: rust:1.79-bookworm
+  # image: rust:1.79-bookworm
+  image: rust:1.95-bullseye
   before_script:
     - apt-get update -y && apt-get install -y tmux
   cache:
@@ -64,7 +66,8 @@ linter:
 
 todo-collector:
   stage: test
-  image: rust:1.79-bookworm
+  # image: rust:1.79-bookworm
+  image: rust:1.95-bullseye
   before_script:
     - apt-get update -y && apt-get install -y tmux
   cache:
@@ -89,7 +92,8 @@ todo-collector:
 
 web-hook-intake:
   stage: test
-  image: rust:1.79-bookworm
+  # image: rust:1.79-bookworm
+  image: rust:1.95-bullseye
   before_script:
     - apt-get update -y && apt-get install -y tmux
   cache:
