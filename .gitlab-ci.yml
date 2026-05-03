@@ -4,7 +4,7 @@ stages:
 
 build-message-bus:
   stage: prebuild
-  image: rust:1.79-bookworm
+  image: rust:1.95-bullseye
   cache:
     - key:
         files:
