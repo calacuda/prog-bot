@@ -4,7 +4,7 @@ stages:
 
 build-message-bus:
   stage: prebuild
-  image: rust:1.95-bullseye
+  image: rust:1-bookworm
   cache:
     - key:
         files:
@@ -25,7 +25,8 @@ build-message-bus:
 message-bus:
   stage: test
   # image: rust:1.79-bookworm
-  image: rust:1.95-bullseye
+  # image: rust:1.95-bullseye
+  image: rust:1-bookworm
   before_script:
     - apt-get update -y && apt-get install -y tmux
   script:
